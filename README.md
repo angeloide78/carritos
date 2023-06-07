@@ -20,7 +20,8 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ## Por hacer
 
-- [ ] Módulo Funcionalidad C
-  - Descripción de la funcionalidad C.
-- [ ] Funcionalidad D
-  - Descripción de la funcionalidad D.
+- Modelo 
+  - [ ] Clases entidades.
+     - Entidades de la base de datos.
+  - [ ] Pruebas de funcionamiento.
+     - Casos de uso de gestión en el modelo de negocio (pruebas).
