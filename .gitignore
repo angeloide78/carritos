@@ -2,6 +2,7 @@
 *.sql
 test*.db
 *.log
+*.ui
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
