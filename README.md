@@ -5,6 +5,8 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ## Por hacer
 
+  - [ ] Arquitectura del controlador. 
+     - ¿Un único módulo e incluir todas las clases o clases controlador separadas?
   - [ ] Separar los test de los módulos, e incluirlos en alguna carpeta
         para no subirlos al repositorio.
   - [ ] Iconos de la aplicación.
@@ -12,8 +14,9 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ### [09-06-2023]
 
-  - [X] Refinamiento del frontend principal. 
-     - Configuración.
+  - [X] Diseño de pantalla de configuración del aplicativo. 
+
+![Prototipo de reserva de carritos](assets/imagenes/configuracion_09_06_2023.png)
 
 ### [08-06-2023]
 
@@ -40,5 +43,24 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
         
 ### [06-06-2023]
 
-  - [x] Ficheros UI generados con Qt Designer. 
+  - [X] Ficheros UI generados con Qt Designer. 
      - Prototipos de la interfaz gráfica del proyecto.
+
+![Prototipo de reserva de carritos](assets/imagenes/prototipo_reservas_09_06_2023.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
