@@ -20,10 +20,9 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
 from log import Log
 from bd import Bd
 
-class Base(Log, Bd):
-    """Clase base de la que heredarán las demás clases que accedan a la base de
-    datos. Implementa un sistema de registro de información en fichero log, para
-    operaciones de debug de la base de datos.
+class Conexion(Log, Bd):
+    """Implementa la conexión y desconexión con la base de datos, así como
+    poder ejecutar sentencias SQL.
     """
     
     def __init__(self, nombreBD, LOG):
@@ -62,18 +61,146 @@ class Base(Log, Bd):
         Bd.desconectar(self)
         self.mensaje("Se finalizó la conexión con %s" % self._Bd__bd)
     
-def main_test():
+class DMLModelo(Conexion):
+    """Crea, modifica y borra entidades (tablas) a partir de una conexión con
+    una base de datos.
+    """
+    
+    def __init__(self, nombreBD, ficheroLOG):
+        """Inicializa el modelo de la aplicación"""
+        
+        super().__init__(nombreBD, ficheroLOG)
+
+    def __crea_parametros(self, atributos, tipo = '?'):
+        """Devuelve una cadena a partir del valor de 'tipo':
+        
+        Tipo == '?'   -> Devuelve una cadena con tantos '?' como número de
+                         elementos tenga los atributos pasados como parámetros.
+        Tipo == 'campos' -> Devuelve una cadena de los atributos pasados como
+                            parámetros, tipo campo=valor.
+        Tipo == 'id' -> Devuelve una cadena con la composición campo=valor.
+        """
+        
+        ret = ""
+        j = 1
+        
+        for i in atributos:
+            
+            if tipo == '?': ret += "?,"
+    
+            if tipo == "campos": ret += "{}=?,".format(i[0])
+            
+            if tipo == "id":
+                ret += "{}=? and ".format(i[0])
+                j = 5
+        
+        return ret[0:len(ret)-j]
+    
+    def __info(self, es_valida, entidad, accion, sql = None, parametros = None):
+        """Registra en el log lo sucedido en la base de datos"""
+        
+        if es_valida: self.mensaje('Entidad: {}. Operación: {}. Parámetros: {}'\
+                                       .format(entidad, accion, parametros))
+        else:
+            self.mensaje('Fallo al {} en {}: SQL: {} Parámetros: {}'\
+                         .format(accion, entidad, sql, parametros), 'error')
+            
+    def crea(self, entidad, atributos):
+        """Crea un nuevo elemento, a partir de una entidad y de sus atributos
+        pasados como parámetros.
+        
+        entidad   -> Define el nombre de una tabla.
+        atributos -> Lista de (campo, valor) con los datos de los campos de
+                     la tabla.
+        """
+        
+        campos = ""
+        for i in atributos: campos += "{},".format(i[0])
+        campos = campos[0:len(campos)-1]
+        
+        cadenaSQL = "insert into {} ({}) values({})"\
+            .format(entidad, campos, self.__crea_parametros(atributos))
+        
+        t = []
+        for i in atributos: t.append(i[1])
+        t = tuple(t)
+        
+        ret = self.ejecutar_sql(cadenaSQL, t)	
+        
+        self.__info(ret[0], entidad, "insertar", cadenaSQL, t)
+        
+        return ret
+
+    def borra(self, entidad, identificadores):
+        """Borra un elemento de una entidad, a partir de uno o varios
+        identificadores pasados como parámetros.
+        
+        entidad   -> Define el nombre de una tabla.
+        identificadores -> Lista de tuplas (campo, valor), que identifica de
+                           forma unívoca un elemento.
+        """
+        
+        cadenaSQL = "delete from {} where {}"\
+            .format(entidad, self.__crea_parametros(identificadores, tipo='id'))
+        
+        t = []
+        
+        for i in identificadores: t.append(i[1])
+        t = tuple(t)
+        
+        ret = self.ejecutar_sql(cadenaSQL, t)	
+        
+        self.__info(ret[0], entidad, "borrar", cadenaSQL, t)
+        
+        return ret        
+    
+    def modifica(self, entidad, atributos, identificadores):
+        """Modifica los atributos de un elemento de una entidad, a partir de uno
+        o varios identificadores pasados como parámetros.
+        
+        entidad   -> Define el nombre de una tabla.
+        atributos -> Lista con tuplas (campo, valor) de los campos de la tabla.
+        identificadores -> Lista de tuplas (campo, valor), que identifica de
+                           forma unívoca un elemento.
+        """
+        
+        cadenaSQL = "update {} set {} where {}"\
+            .format(entidad, self.__crea_parametros(atributos, tipo='campos'),\
+            self.__crea_parametros(identificadores, tipo='id'))
+        
+        t = []
+        
+        for i in atributos: t.append(i[1])
+        for i in identificadores: t.append(i[1])
+        t = tuple(t)
+        
+        ret = self.ejecutar_sql(cadenaSQL, t)
+        
+        self.__info(ret[0], entidad, "modificar", cadenaSQL, t)
+        
+        return ret
+        
+    def visualiza(self, entidad, consulta, t = None):
+        '''Devuelve los datos de la consulta pasada como parámetro'''
+
+        ret = self.ejecutar_sql(consulta, t, tipo='fetchall')
+        
+        self.__info(ret[0], entidad, "consultar", consulta, t)
+      
+        return ret 
+
+def main_test_0():
     """Función para realización de tests"""
     
     # Conexión con la base de datos.
-    a = Base('test_1.db', 'data_1.log')
+    a = Conexion('test_1.db', 'data_1.log')
     a.conectar()
         
     # ############################################################
     # Prueba de creación de base de datos e inserción de una fila.
     # ############################################################
     
-    cadenaSQL = '''
+    cadenaSQL = """
     BEGIN TRANSACTION ;
     CREATE TABLE IF NOT EXISTS "prueba" (
 	"id"	INTEGER NOT NULL,
@@ -82,7 +209,7 @@ def main_test():
     ) ;
     INSERT INTO "prueba" VALUES (0,'Valor 0') ;
     COMMIT ;
-    '''
+    """
     
     a.ejecutar_sql(cadenaSQL, tipo='executescript')
     
@@ -136,7 +263,7 @@ def main_test():
     
     # Conexión con la base de datos.
     
-    a = Base('test_1.db', 'data_1.log')
+    a = Conexion('test_1.db', 'data_1.log')
     a.conectar()
         
     cadenaSQL = "select max(id) from prueba"
@@ -163,6 +290,82 @@ def main_test():
     
     a.desconectar()
     
+def main_test_1():
+    """Función para realización de tests"""
+    
+    # #########
+    # INSERCIÓN
+    # #########
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.crea('prueba', [('id', 8), ('dato', 'Valor 8')])
+        
+    a.desconectar()
+    
+    # ############
+    # MODIFICACIÓN
+    # ############
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.modifica('prueba', [('dato', 'Dato 8 modificado')], [("id", 8)])
+    
+    a.desconectar()
+    
+    # #######
+    # BORRADO
+    # #######
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.borra('prueba', [('id', 8)])
+    
+    a.desconectar()
+    
+def main_test_2():
+    """Función para realización de tests"""
+    
+    # #########
+    # INSERCIÓN
+    # #########
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.crea('prueba', [('id', 10), ('dato', 'Valor 10')])
+        
+    a.desconectar()
+    
+    # ############
+    # MODIFICACIÓN
+    # ############
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.modifica('prueba', [('id', 11), ('dato', 'Dato 10 modificado')], \
+               [("id", 10), ('dato', 'Valor 10')])
+    
+    a.desconectar()
+    
+    # #######
+    # BORRADO
+    # #######
+    
+    a = DMLModelo('test_1.db', 'data_1.log')
+    a.conectar()
+    
+    a.borra('prueba', [('id', 11)])
+        
+    a.desconectar()
+    
 # Test.    
 if __name__ == '__main__':
-    main_test()
+    pass
+    # main_test_0()
+    # main_test_1()
+    # main_test_2()

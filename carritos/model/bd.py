@@ -46,7 +46,7 @@ class Bd:
         self.__conn.close()    
         
     def __msj_err(self, texto, er):
-        ret = False, '%s. Mensaje: %s' % (texto, er)
+        ret = False, '%s. Mensaje: %s' % (texto, er), None
         return ret
 
     def ejecutar_sql(self, cadenaSQL, parametros = None, tipo = None):
@@ -89,7 +89,9 @@ class Bd:
                 
                 else:
                     
-                    if parametros is None: self.__c.execute(cadenaSQL)
+                    if parametros is None:
+                        self.__c.execute(cadenaSQL)
+                        datos = parametros
                     
                     if parametros is not None:
                         
