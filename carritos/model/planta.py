@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from base import DMLModelo
-from model import FICHERO_BD, FICHERO_LOG
+from carritos.model.base import DMLModelo
+from carritos.model.model import FICHERO_BD, FICHERO_LOG
  
 class Planta(DMLModelo):
     """Define la planta de un edificio"""

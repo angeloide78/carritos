@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from base import DMLModelo
-from model import FICHERO_BD, FICHERO_LOG
+from carritos.model.base import DMLModelo
+from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Carrito(DMLModelo):
     """Carrito de portátiles"""
@@ -60,11 +60,20 @@ class Carrito(DMLModelo):
                       [(aux, actual)])
         self.desconectar()
     
-    def recupera_carritos(self):
+    def recupera_carritos(self, id_planta = None):
         """Devuelve todos los carritos"""
         
         self.conectar()
-        ret = self.visualiza("Carrito", "select * from v_carrito")[2]
+        
+        if id_planta is None:
+            cadenaSQL = "select * from v_carrito"
+            t = None
+        else:
+            cadenaSQL = "select * from v_carrito where planta_id = ? "
+            t = (id_planta, )
+        
+        ret = self.visualiza("Carrito", cadenaSQL, t)[2]
+        
         self.desconectar()
         
         return ret

@@ -5,18 +5,33 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ## Por hacer
 
-  - [ ] Arquitectura del controlador. 
-     - ¿Un único módulo e incluir todas las clases o clases controlador separadas?
+  - [ ] Cambiar colores de cajas de texto  de franjas horarias al 
+        editar las reservas.
+  - [ ] Franjas horarias pasarlas a datos hardcodeados. No tiene sentido
+        guardarlas en la base de datos.
+  - [ ] Tooltip en botones de franjas horarias.
+  - [ ] Rellenar datos de información para Carritos.
+  - [ ] Sistema de configuración de datos de la aplicación.
+  - [ ] Gestión de incidencias. 
   - [ ] Separar los test de los módulos, e incluirlos en alguna carpeta
         para no subirlos al repositorio.
   - [ ] Iconos de la aplicación.
   - [ ] Manual de funcionamiento.
 
+### [13-06-2023]
+
+### [12-06-2023]
+
+  - [X] Arquitectura del controlador. 
+  - [X] Carga de combos Planta y Carrito. 
+  - [X] Manejador de eventos para selección de fechas y creación de reserva.
+     * Asignacón de nombre de profesor/a.
+
 ### [09-06-2023]
 
   - [X] Diseño de pantalla de configuración del aplicativo. 
 
-![Prototipo de reserva de carritos](assets/imagenes/configuracion_09_06_2023.png)
+![Prototipo de reserva de carritos](carritos/assets/img_doc/configuracion_09_06_2023.png)
 
 ### [08-06-2023]
 
@@ -32,11 +47,11 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ### [07-06-2023]
 
-  - [X] Módulo bd (07-06-2023)
+  - [X] Módulo bd 
      - Clase Bd, que interacciona con una base de datos SQLite.
-  - [X] Módulo log (07-06-2023)
+  - [X] Módulo log 
      - Clase Log, que genera texto en ficheros de registros de eventos .log.
-  - [X] Módulo base (07-06-2023)
+  - [X] Módulo base 
      - Clase Base, heredada de Bd y Log, que será la clase padre de las clases
        que interaccionen con la base de datos.
   - [X] Se diseñan clases profesor, planta, horario y carrito.
@@ -46,7 +61,7 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
   - [X] Ficheros UI generados con Qt Designer. 
      - Prototipos de la interfaz gráfica del proyecto.
 
-![Prototipo de reserva de carritos](assets/imagenes/prototipo_reservas_09_06_2023.png)
+![Prototipo de reserva de carritos](carritos/assets/img_doc/prototipo_reservas_09_06_2023.png)
 
 
 

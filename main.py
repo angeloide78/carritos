@@ -17,39 +17,18 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-FICHERO_BD = "carritos/model/carritos.db"
-FICHERO_LOG = "carritos/model/carritos.log"
+import sys
+from PyQt5.QtWidgets import QApplication
 
-    
-#def main_test_0():
-    #"""Función para realización de tests"""
-    
-    ## ########
-    ## PROFESOR
-    ## ########
-    
-    #p = Profesor()
-    #p.crea_profesor("pepe")
-    #p.modifica_profesor("pepe", "juan pepe")
-    #p.borra_profesor("juan pepe")
-    #print(p.recupera_profesores())
+from carritos.controller.controller import VentanaPrincipal
 
-#def main_test_1():
-    #"""Función para realización de tests"""
-    
-    ## ######
-    ## PLANTA
-    ## ######
-    
-    #p = Planta()
-    #p.crea_planta("una")
-    ##p.crea_planta("dos")
-    ##p.modifica_planta("una", "100")
-    ## p.borra_planta("1")
-    ## print(p.recupera_plantas())
+def main():
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion') 
+    form = VentanaPrincipal()
+    form.show()
+    app.exec_()
 
-## Test.    
-#if __name__ == '__main__':
-    #pass
-    ## main_test_0()
-    ## main_test_1()
+if __name__ == '__main__':
+    sys.exit(main())
+

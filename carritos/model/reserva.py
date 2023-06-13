@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from base import DMLModelo
-from model import FICHERO_BD, FICHERO_LOG
+from carritos.model.base import DMLModelo
+from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Reserva(DMLModelo):
     """Reserva de carritos de de portátiles"""
@@ -42,14 +42,13 @@ class Reserva(DMLModelo):
                    ('carrito_id', carrito_id)])
         self.desconectar()
 
-    def borra_reserva(self, profesor_id, horario_id, carrito_id, fecha):
-        """Borra una reserva a partir de los identificadores de profesor,
-        horario, carrito y una fecha en formato YYYY_MM_DD.
+    def borra_reserva(self, horario_id, carrito_id, fecha):
+        """Borra una reserva a partir de los identificadores de horario, carrito
+        y una fecha en formato YYYY_MM_DD.
         """
         
         self.conectar()
-        self.borra('reserva', [('profesor_id', profesor_id),\
-                   ('horario_id', horario_id),\
+        self.borra('reserva', [('horario_id', horario_id),\
                    ('fecha', fecha),\
                    ('carrito_id', carrito_id)])
         self.desconectar()
@@ -85,11 +84,33 @@ class Reserva(DMLModelo):
                        ("carrito_id", carrito_id), ("fecha", fecha)])
         self.desconectar()
     
-    def recupera_reservas(self):
+    def recupera_reservas(self, carrito_id = None, fecha = None):
         """Devuelve todas las reservas"""
         
+        t = None
+        cadenaSQL = "select * from v_reserva"
+        
+        if carrito_id is not None or fecha is not None:
+            
+            t = []
+            condicion = "where"
+            
+            if carrito_id is not None:
+                condicion += " carrito_id = ? and "
+                t.append(carrito_id)
+                
+            if fecha is not None:
+                condicion += " fecha = ? and "
+                t.append(fecha)
+            
+            condicion += " 1 = 1"
+        
+            cadenaSQL = "{} {}".format(cadenaSQL, condicion)
+        
+            t = tuple(t)        
+        
         self.conectar()
-        ret = self.visualiza("Reserva", "select * from v_reserva")[2]
+        ret = self.visualiza("Reserva", cadenaSQL, t)[2]
         self.desconectar()
         
         return ret

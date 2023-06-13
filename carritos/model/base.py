@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from log import Log
-from bd import Bd
+from carritos.model.log import Log
+from carritos.model.bd import Bd
 
 class Conexion(Log, Bd):
     """Implementa la conexión y desconexión con la base de datos, así como
