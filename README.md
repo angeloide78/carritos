@@ -27,6 +27,8 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
   - [X] Manejador de eventos para selección de fechas y creación de reserva.
      * Asignacón de nombre de profesor/a.
 
+![Planificación y Reservas](carritos/assets/img_doc/Planificacion_y_Reservas_2023_06_12.png)
+
 ### [09-06-2023]
 
   - [X] Diseño de pantalla de configuración del aplicativo. 
