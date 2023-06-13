@@ -18,14 +18,150 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
 """
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QDate
 
 from carritos.view.view_carritos import Ui_Form
 from carritos.view.view_profesorado import Ui_Dialog_Profesorado
-
+from carritos.view.view_incidencias import Ui_Dialog_Incidencia
 from carritos.model.planta import Planta
 from carritos.model.carrito import Carrito
 from carritos.model.profesor import Profesor
 from carritos.model.reserva import Reserva
+
+class Dialog_Incidencia(QtWidgets.QDialog):
+    
+    def __init__(self, fecha = None, horario = None, portatil_id = None, \
+                 profesor_id = None, observ = None, estado = None):
+        """Inicializa el diálogo de gestión de incidencias"""
+        
+        super(Dialog_Incidencia, self).__init__()
+        self.ui = Ui_Dialog_Incidencia()
+        self.ui.setupUi(self)
+                
+        # Carga de profesores.
+        self.__poblar_profesores(profesor_id)
+        
+        # Fijar el horario.
+        self.__fijar_horario(horario)
+        
+        # Observaciones de la incidencia (descripción).
+        if observ is not None: self.ui.textEdit_descripcion.setText(str(observ))
+        
+        # Fecha del calendario.
+        self.__fijar_fecha(fecha)
+        
+        # Estado de la incidencia.
+        self.__fijar_estado(estado)
+        
+        # Carga de carritos.
+        # self.__poblar_carritos()
+        
+        # Carga de portátiles.
+        self.__poblar_portatiles(portatil_id)
+        
+        #self.profesorado = profesorado
+        #self.ret = {"opcion": "c",
+                    #"profesor_id": None}
+        
+        ## Cargamos datos.
+        #self.__poblar()
+        
+        ## Connects
+        #self.ui.pushButton_reservar.\
+            #clicked.connect(lambda: self.OnClickedAccion("r"))
+        #self.ui.pushButton_borrar.\
+            #clicked.connect(lambda: self.OnClickedAccion("b"))
+        #self.ui.pushButton_cancelar.\
+            #clicked.connect(lambda: self.OnClickedAccion("c"))
+        #self.ui.tableWidget_profesorado.\
+            #doubleClicked.connect(lambda: self.OnClickedAccion("r"))
+
+    #def __obtener_id(self):
+        #"""Obtiene el identificador del profesor"""
+
+        #fila = self.ui.tableWidget_profesorado.currentRow()
+        #if fila >= 0:
+            #ret = self.ui.tableWidget_profesorado.item(fila, 0).text()
+        #else: ret = None
+
+        #return ret
+
+    def __poblar_portatiles(self, portatil_id):
+        """Se puebla los portátiles. Si portatil_id no es nulo se posiciona el
+        combo en el portatil_id."""
+        
+        pass
+    
+            
+    def __fijar_estado(self, estado):
+        """Si el estado no es nulo, se visualiza el mismo en el combo de
+        estados."""
+        
+        if estado is not None:
+            
+            indice = self.ui.comboBox_estado.findText(estado)
+            if indice >= 0:
+                self.ui.comboBox_estado.setCurrentIndex(indice)          
+    
+    def __fijar_fecha(self, fecha):
+        """Si la fecha no es nula, se posiciona en el calendario"""
+        
+        if fecha is not None:
+            
+            anno, mes, dia = fecha.split("_")
+            
+            fecha_calendario = QDate(int(anno), int(mes), int(dia))
+            self.ui.calendarWidget.setSelectedDate(fecha_calendario)            
+        
+    def __fijar_horario(self, horario):
+        """Si horario no es nulo, se posiciona en el combo de dicho horario"""
+        
+        if horario is not None:
+            if str(horario) == "0": horario = "RECREO"
+            indice = self.ui.comboBox_horario.findText(str(horario))
+            if indice >= 0:
+                self.ui.comboBox_horario.setCurrentIndex(indice)          
+        
+    def __poblar_profesores(self, profesor_id):
+        """Se puebla con los profesores y profesoras. Si profesor_id no es nulo
+        se posiciona el combo en el profesor_id.
+        """
+        
+        self.ui.comboBox_profesor.clear()
+    
+        ret = Profesor().recupera_profesores()
+        
+        # Se puebla el combo.
+        if not (ret is None or ret == []):
+            for i in ret:
+                id_ = str(i[0])
+                nombre_profesor = str(i[1])
+                self.ui.comboBox_profesor.addItem(nombre_profesor, id_)
+                
+        # Nos posicionamos en el profesor pasado como parámetro.
+        if profesor_id is not None:
+            indice = self.ui.comboBox_profesor.findData(profesor_id)
+            if indice >= 0:
+                self.ui.comboBox_profesor.setCurrentIndex(indice)            
+
+    #def OnProfesorado(self):
+        #"""Selecciona el profesor con doble click de ratón"""
+        
+        #self.OnClickedReservar()
+        
+    #def OnClickedAccion(self, opcion):
+        #"""Devuelve un diccionario, especificando la operación a realizar y
+        #el identificador del profesor/a:
+        
+        #opcion:
+          #'r' se crea la reserva,
+          #'b' se borra la reserva,
+          #'c' se cancela la operación.
+        #"""
+        
+        #self.ret = {'opcion': opcion,
+                    #'profesor_id': self.__obtener_id()}
+        #self.accept()       
 
 class Dialog_Profesor(QtWidgets.QDialog):
     
@@ -119,20 +255,24 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         self.poblar_planta()
         self.poblar_carrito()
         
-        # Hacemos invisibles algunos componentes.
-        for caja in [self.ui.plainTextEdit_id_1, self.ui.plainTextEdit_id_2, \
-                     self.ui.plainTextEdit_id_3, self.ui.plainTextEdit_id_4, \
-                     self.ui.plainTextEdit_id_5, self.ui.plainTextEdit_id_6, \
-                     self.ui.plainTextEdit_id_RECREO]:
-            caja.setVisible(False)
+        ## Hacemos invisibles algunos componentes.
+        #for caja in [self.ui.plainTextEdit_id_1, self.ui.plainTextEdit_id_2, \
+                     #self.ui.plainTextEdit_id_3, self.ui.plainTextEdit_id_4, \
+                     #self.ui.plainTextEdit_id_5, self.ui.plainTextEdit_id_6, \
+                     #self.ui.plainTextEdit_id_RECREO]:
+            #caja.setVisible(False)
         
         # Carga de reservas.
         self.cargar_reservas()
         
-        # Connects.
+        # Connects de combos.
         self.ui.comboBox_planta.currentIndexChanged\
             .connect(self.OnCargarCarrito)
+        
+        # Connects de calendario.
         self.ui.calendarWidget.clicked.connect(self.OnCalendario)
+        
+        # Connects de botones de franjas horarias.
         self.ui.pushButton_1.clicked.connect(lambda: self.OnClickReserva("1"))
         self.ui.pushButton_2.clicked.connect(lambda: self.OnClickReserva("2"))
         self.ui.pushButton_3.clicked.connect(lambda: self.OnClickReserva("3"))
@@ -141,6 +281,9 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         self.ui.pushButton_4.clicked.connect(lambda: self.OnClickReserva("4"))
         self.ui.pushButton_5.clicked.connect(lambda: self.OnClickReserva("5"))
         self.ui.pushButton_6.clicked.connect(lambda: self.OnClickReserva("6"))
+        
+        # Connect de incidencias.
+        self.ui.pushButton_crear_incid.clicked.connect(self.OnCrearIncidencia)
               
     def poblar_planta(self):
         """Se puebla el combo de plantas"""
@@ -184,17 +327,16 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         for caja in [self.ui.plainTextEdit_1, self.ui.plainTextEdit_2, \
                      self.ui.plainTextEdit_3, self.ui.plainTextEdit_RECREO, \
                      self.ui.plainTextEdit_4, self.ui.plainTextEdit_5, \
-                     self.ui.plainTextEdit_6, self.ui.plainTextEdit_id_1]:
+                     self.ui.plainTextEdit_6]:
             caja.setPlainText("")
             
         for reserva in reservas:
             profesor_nombre = reserva[8]
-            profesor_id = str(reserva[1])
+            # profesor_id = str(reserva[1])
             franja_horaria = reserva[0]
             
             if franja_horaria == 0:
                 self.ui.plainTextEdit_RECREO.setPlainText(profesor_nombre)
-                
                 
             if franja_horaria == 1:
                 self.ui.plainTextEdit_1.setPlainText(profesor_nombre)
@@ -289,6 +431,47 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             # seleccionado del calendario, mostrando las reservas de todos los
             # profesores en dicho día.
             
-            r = Reserva().recupera_reservas(carrito_id, fecha)
+            Reserva().recupera_reservas(carrito_id, fecha)
             self.cargar_reservas()
+  
+    def OnCrearIncidencia(self):
+        """Crea una incidencia en un portátil de un carrito"""
+        
+        ## Cambio del color.
+        #background_color = plainTextEdit.palette().color(plainTextEdit.backgroundRole())
+            #print("Color de fondo:", background_color)
+    
+            ## Obtener el color de letra actual
+            #text_color = plainTextEdit.palette().color(plainTextEdit.foregroundRole())
+            #p        
+        
+        # Se recuperan los profesores.
+        # p = Profesor().recupera_profesores()
+        
+        dialog = Dialog_Incidencia()
+        dialog.exec_()
+    
+        #if dialog.ret['opcion'] == "c":
+            ## Se cancela la operación.
+            #pass
+        
+        #else:
+            ## Recuperamos identificadores.
+            #horario_id = 0 if franja_horaria == "R" else int(franja_horaria)
+            #profesor_id = dialog.ret['profesor_id']
+            #fecha = self.obtener_fecha()
+            #carrito_id = self.ui.comboBox_carrito.currentData() 
+            
+            ## Se busca en las reservas. Si la reserva ya existe, se puede borrar
+            ## o modificar. Si la reserva no existe, se crea.
+            
+            #self.reserva_carrito(profesor_id, horario_id, fecha, carrito_id, 
+                                 #dialog.ret['opcion'])
+        
+            ## Se muestran las franjas horarias según el dia que se haya
+            ## seleccionado del calendario, mostrando las reservas de todos los
+            ## profesores en dicho día.
+            
+            #r = Reserva().recupera_reservas(carrito_id, fecha)
+            #self.cargar_reservas()
   

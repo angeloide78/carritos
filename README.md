@@ -9,6 +9,8 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
         editar las reservas.
   - [ ] Franjas horarias pasarlas a datos hardcodeados. No tiene sentido
         guardarlas en la base de datos.
+     * ¿Dejar los datos harcodeados en la base de datos, de manera fija
+       para mantener la integridad referencial?
   - [ ] Tooltip en botones de franjas horarias.
   - [ ] Rellenar datos de información para Carritos.
   - [ ] Sistema de configuración de datos de la aplicación.
@@ -19,6 +21,15 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
   - [ ] Manual de funcionamiento.
 
 ### [13-06-2023]
+
+  - [ ] Prototipo de incidencias.
+  - [ ] Determinar los estados de las incidencias: ABIERTA / CERRADA
+     * Cambios de color en los estados: ABIERTA -> Color Verde, 
+       CERRADA -> Color Rojo
+  - [ ] Incluir planta, carrito y portátil, para definir la incidencia (en 
+        combos)
+
+![Planificación y Reservas](carritos/assets/img_doc/Prototipo_Incidencias_2023_06_13.png)
 
 ### [12-06-2023]
 
