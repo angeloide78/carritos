@@ -52,11 +52,20 @@ class Planta(DMLModelo):
                       [('observ', nombre_actual)])
         self.desconectar()
     
-    def recupera_plantas(self):
+    def recupera_plantas(self, planta_id = None):
         """Devuelve todas las plantas"""
         
         self.conectar()
-        ret = self.visualiza("Planta", "select * from v_planta")[2]
+        
+        if planta_id is None:
+            cadenaSQL = "select * from v_planta"
+            t = None
+        else:
+            cadenaSQL = "select * from v_planta where planta_id = ? "
+            t = (planta_id, )
+        
+        ret = self.visualiza("Planta", cadenaSQL, t)[2]
+        
         self.desconectar()
         
-        return ret   
+        return ret

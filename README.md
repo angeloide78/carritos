@@ -5,28 +5,47 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ## Por hacer
 
+  - [ ] En informes, ¿opción de exportar a CSV?.
+  - [ ] En informes, ¿uso de ReportLab o generación de html/css y visualización
+        en un componente web?
   - [ ] Cambiar colores de cajas de texto  de franjas horarias al 
         editar las reservas.
   - [ ] Franjas horarias pasarlas a datos hardcodeados. No tiene sentido
         guardarlas en la base de datos.
+  - [ ] Caja de información de las reservas está vacía. -> Incluir información
+        de los carritos.
      * ¿Dejar los datos harcodeados en la base de datos, de manera fija
        para mantener la integridad referencial?
   - [ ] Tooltip en botones de franjas horarias.
   - [ ] Rellenar datos de información para Carritos.
   - [ ] Sistema de configuración de datos de la aplicación.
-  - [ ] Gestión de incidencias. 
   - [ ] Separar los test de los módulos, e incluirlos en alguna carpeta
         para no subirlos al repositorio.
   - [ ] Iconos de la aplicación.
   - [ ] Manual de funcionamiento.
 
+### [19-06-2023]
+
+  - [X] Gestión de incidencias. 
+     *  Se diseña por completo la gestión de incidencias. Se realizan pruebas
+        y casos de uso. Todo correcto.
+
+![Planificación y Reservas](carritos/assets/img_doc/Planificacion_Reservas_19_06_2023.png)
+
+![Incidencias](carritos/assets/img_doc/Incicendias_19_06_2023.png)
+
+     Hacer click en botón "GESTIONAR INCIDENCIA" o doble click en alguna 
+     incidencia, se visualiza el gestor de indicencias.
+
+![Gestión de incidencias](carritos/assets/img_doc/Gestion_Incidencia_19_06_2023.png)
+  
 ### [13-06-2023]
 
-  - [ ] Prototipo de incidencias.
-  - [ ] Determinar los estados de las incidencias: ABIERTA / CERRADA
-     * Cambios de color en los estados: ABIERTA -> Color Verde, 
-       CERRADA -> Color Rojo
-  - [ ] Incluir planta, carrito y portátil, para definir la incidencia (en 
+  - [X] Prototipo de incidencias.
+  - [X] Determinar los estados de las incidencias: ABIERTA / CERRADA
+  - [ ] Cambios de color en los estados: ABIERTA -> Color Verde, 
+        CERRADA -> Color Rojo
+  - [X] Incluir planta, carrito y portátil, para definir la incidencia (en 
         combos)
 
 ![Planificación y Reservas](carritos/assets/img_doc/Prototipo_Incidencias_2023_06_13.png)

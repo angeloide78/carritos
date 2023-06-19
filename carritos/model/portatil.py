@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from base import DMLModelo
-from model import FICHERO_BD, FICHERO_LOG
+from carritos.model.base import DMLModelo
+from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Portatil(DMLModelo):
     """Portátil de los carritos"""
@@ -78,15 +78,38 @@ class Portatil(DMLModelo):
         self.modifica("portatil", [(aux, nuevo)], [("id", n_serie)])
         self.desconectar()
     
-    def recupera_portatiles(self):
+    def recupera_portatiles(self, carrito_id = None, portatil_id = None):
         """Devuelve todos los portátiles"""
         
+        t = None
+        cadenaSQL = "select * from v_portatil"
+        
+        if carrito_id is not None or portatil_id is not None:
+            
+            t = []
+            condicion = "where"
+            
+            if carrito_id is not None:
+                condicion += " carrito_id = ? and "
+                t.append(carrito_id)
+                
+            if portatil_id is not None:
+                condicion += " n_serie = ? and "
+                t.append(portatil_id)
+            
+            condicion += " 1 = 1"
+        
+            cadenaSQL = "{} {}".format(cadenaSQL, condicion)
+        
+            t = tuple(t)        
+        
         self.conectar()
-        ret = self.visualiza("Portátil", "select * from v_portatil")[2]
+        ret = self.visualiza("Portátil", cadenaSQL, t)[2]
         self.desconectar()
         
         return ret
-
+        
+    
 def main_test_0():
     """Función para realización de tests"""
     
