@@ -29,7 +29,7 @@ class Incidencia(DMLModelo):
         super().__init__(FICHERO_BD, FICHERO_LOG)
                    
     def crea_incidencia(self, observ, n_serie, fecha, profesor_id,\
-                        horario_id, estado):
+                        horario, estado):
         """Crea una nueva incidencia, que se define por las observaciones,
         el identificador del portátil, la fecha donde se originó, el
         identificador del profesor y de la franja horaria, y el estado.
@@ -45,7 +45,7 @@ class Incidencia(DMLModelo):
                    ('portatil_id', n_serie),\
                    ('fecha', fecha),\
                    ('profesor_id', profesor_id),\
-                   ('horario_id', horario_id),\
+                   ('horario', horario),\
                    ('estado', estado)])
         self.desconectar()
 
@@ -75,7 +75,7 @@ class Incidencia(DMLModelo):
         
         if cambio == "portatil": aux = "portatil_id"
         if cambio == "profesor": aux = "profesor_id"
-        if cambio == "horario": aux = "horario_id"
+        if cambio == "horario": aux = "horario"
             
         self.conectar()
         self.modifica("incidencia", [(aux, nuevo)], [("id", incidencia_id)])

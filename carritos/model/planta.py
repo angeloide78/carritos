@@ -37,11 +37,11 @@ class Planta(DMLModelo):
         self.crea('planta', [('observ', str(nombre))])
         self.desconectar()
 
-    def borra_planta(self, nombre):
-        """Borra una planta a partir de su nombre"""
+    def borra_planta(self, id_):
+        """Borra una planta a partir de su id"""
         
         self.conectar()
-        self.borra('planta', [('observ', str(nombre))])
+        self.borra('planta', [('id', id_)])
         self.desconectar()
         
     def modifica_planta(self, nombre_actual, nombre_nuevo):

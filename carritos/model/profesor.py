@@ -35,11 +35,12 @@ class Profesor(DMLModelo):
         self.crea('profesor', [('nombre', str(nombre))])
         self.desconectar()
 
-    def borra_profesor(self, nombre):
-        """Borra un profesor a partir de su nombre"""
+    def borra_profesor(self, id_):
+        """Borra un profesor a partir de su id"""
         
         self.conectar()
-        self.borra('profesor', [('nombre', str(nombre))])
+        # self.borra('profesor', [('nombre', str(nombre))])
+        self.borra('profesor', [('id', id_)])
         self.desconectar()
         
     def modifica_profesor(self, nombre_actual, nombre_nuevo):

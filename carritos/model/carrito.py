@@ -28,49 +28,51 @@ class Carrito(DMLModelo):
         
         super().__init__(FICHERO_BD, FICHERO_LOG)
                    
-    def crea_carrito(self, nombre, planta_id):
-        """Crea un carrito, especificando el nombre del carrito y el
-        identificador de la planta donde está ubidado.
+    def crea_carrito(self, nombre, planta_id, observ = None):
+        """Crea un carrito, especificando el nombre del carrito, las
+        observaciones y el identificador de la planta donde está ubidado.
         """
         
         self.conectar()
         self.crea('carrito', [('desc', str(nombre)),\
-                              ('planta_id', planta_id)])
+                              ('planta_id', planta_id), \
+                              ('observ', observ)])
         self.desconectar()
 
-    def borra_carrito(self, nombre):
-        """Borra un carrito a partir su nombre pasado como parámetro"""
+    def borra_carrito(self, id_):
+        """Borra un carrito a partir su id pasado como parámetro"""
         
         self.conectar()
-        self.borra('carrito', [('desc', str(nombre))])
+        self.borra('carrito', [('id', id_)])
         self.desconectar()
         
-    def modifica_carrito(self, actual, nuevo, cambio = 'nombre'):
-        """Modifica el nombre o la planta del carrito actual por otro nuevo.
-        
-        cambio == 'nombre' -> Cambia el nombre del carrito.
-        cambio == 'planta' -> Cambia la planta del carrito (su id).
+    def modifica_carrito(self, carrito_id, carrito_nombre, planta_id, \
+                         carrito_observ):
+        """Modifica el nombre, las observaciones o la planta del carrito actual
+        por otro nuevo.
         """
         
-        if cambio == 'nombre': aux = 'desc'
-        if cambio == 'planta': aux = 'planta_id'
-            
+        atributos = [("desc", carrito_nombre), ("planta_id", planta_id), \
+                     ("observ", carrito_observ)]
+                    
         self.conectar()
-        self.modifica('carrito', [(aux, nuevo)],\
-                      [(aux, actual)])
+        self.modifica('carrito', atributos, [("id", carrito_id)])
         self.desconectar()
     
-    def recupera_carritos(self, id_planta = None):
+    def recupera_carritos(self, planta_id = None, carrito_id = None):
         """Devuelve todos los carritos"""
         
         self.conectar()
         
-        if id_planta is None:
+        if planta_id is None and carrito_id is None:
             cadenaSQL = "select * from v_carrito"
             t = None
-        else:
+        elif carrito_id is not None:
+            cadenaSQL = "select * from v_carrito where carrito_id = ? "
+            t = (carrito_id, )
+        elif planta_id is not None:
             cadenaSQL = "select * from v_carrito where planta_id = ? "
-            t = (id_planta, )
+            t = (planta_id, )
         
         ret = self.visualiza("Carrito", cadenaSQL, t)[2]
         

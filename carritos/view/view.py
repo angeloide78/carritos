@@ -17,18 +17,10 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-from PyQt5.QtWidgets import QApplication
+ICONO_ACERCADE = "carritos/assets/imagenes/carritos_icono_192.png"
+LOGO_APLICACION = "carritos/assets/imagenes/carritos_icono_192.png"
+ICONO_APLICACION = "carritos/assets/imagenes/carritos_icono_32.png"
+LOGO_IES = "carritos/assets/imagenes/logo_ies.png"
 
-from carritos.controller.controller import VentanaPrincipal
 
-def main(): 
-    app = QApplication(sys.argv)
-    app.setStyle('Fusion') 
-    form = VentanaPrincipal()
-    form.show()
-    app.exec_()
-
-if __name__ == '__main__':
-    sys.exit(main())
-
+    

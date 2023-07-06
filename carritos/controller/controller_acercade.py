@@ -17,18 +17,16 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtWidgets, QtGui
 
-from carritos.controller.controller import VentanaPrincipal
+from carritos.view.view_acercade import Ui_Dialog_acercade
 
-def main(): 
-    app = QApplication(sys.argv)
-    app.setStyle('Fusion') 
-    form = VentanaPrincipal()
-    form.show()
-    app.exec_()
-
-if __name__ == '__main__':
-    sys.exit(main())
-
+class Dialog_Acercade(QtWidgets.QDialog):
+    def __init__(self, ICONO_ACERCADE):
+        """Inicializa el diálogo de acerca de."""
+        
+        super(Dialog_Acercade, self).__init__()
+        self.ui = Ui_Dialog_acercade()
+        self.ui.setupUi(self)
+        
+        self.ui.label_icono.setPixmap(QtGui.QPixmap(ICONO_ACERCADE))

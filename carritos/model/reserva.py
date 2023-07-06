@@ -28,7 +28,7 @@ class Reserva(DMLModelo):
         
         super().__init__(FICHERO_BD, FICHERO_LOG)
                    
-    def crea_reserva(self, profesor_id, horario_id, carrito_id, fecha):
+    def crea_reserva(self, profesor_id, horario, carrito_id, fecha):
         """Crea una reserva a partir de los identificadores de profesor,
         horario, carrito y la fecha (YYYY_MM_DD) en la que se ha realizado dicha
         reserva.
@@ -37,24 +37,24 @@ class Reserva(DMLModelo):
         self.conectar()
         self.crea('reserva', \
                   [('profesor_id', profesor_id),\
-                   ('horario_id', horario_id),\
+                   ('horario', horario),\
                    ('fecha', fecha),\
                    ('carrito_id', carrito_id)])
         self.desconectar()
 
-    def borra_reserva(self, horario_id, carrito_id, fecha):
+    def borra_reserva(self, horario, carrito_id, fecha):
         """Borra una reserva a partir de los identificadores de horario, carrito
         y una fecha en formato YYYY_MM_DD.
         """
         
         self.conectar()
-        self.borra('reserva', [('horario_id', horario_id),\
+        self.borra('reserva', [('horario', horario),\
                    ('fecha', fecha),\
                    ('carrito_id', carrito_id)])
         self.desconectar()
         
     def modifica_reserva(self, nuevo, cambio, profesor_id, carrito_id, \
-                         horario_id, fecha):
+                         horario, fecha):
         """Modifica un elemento de la reserva, pudiendo ser el identificador de
         profesor, horario, carrito y la fecha de reserva en formato YYYY_MM_DD,
         donde actual es el elemento que se va a cambiar y nuevo es el nuevo
@@ -65,22 +65,22 @@ class Reserva(DMLModelo):
         "cambio" indica a qué campo afectará el nuevo valor:
         
         cambio == 'profesor' -> Cambia el profesor_id.
-        cambio == 'horario' -> Cambia el horario_id.
+        cambio == 'horario' -> Cambia el horario.
         cambio == 'carrito' -> Cambia el carrito_id.
         cambio == 'fecha' -> Cambia la fecha.
         
-        profesor_id, horario_id, reserva_id, fecha -> Identifica la reserva.
+        profesor_id, horario, reserva_id, fecha -> Identifica la reserva.
         """
         
         if cambio == "profesor": aux = "profesor_id"
-        if cambio == "horario": aux = "horario_id"
+        if cambio == "horario": aux = "horario"
         if cambio == "carrito": aux = "carrito_id"
         if cambio == "fecha": aux = "fecha"
             
         self.conectar()
         self.modifica('reserva', [(aux, nuevo)],\
                       [("profesor_id", profesor_id),\
-                       ("horario_id", horario_id),\
+                       ("horario", horario),\
                        ("carrito_id", carrito_id), ("fecha", fecha)])
         self.desconectar()
     

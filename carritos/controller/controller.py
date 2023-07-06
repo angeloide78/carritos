@@ -17,331 +17,38 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QDate
+import json
+import datetime
+import shutil
+import sys
+from os import remove as f_borrar_fichero
+from os.path import exists as f_exists
 
+
+from PyQt5 import QtWidgets, QtGui
+
+from carritos.controller.controller_configuracion import Dialog_Configuracion
+from carritos.controller.controller_configuracion_carrito \
+     import Dialog_Configuracion_Carrito
+from carritos.controller.controller_configuracion_portatil \
+     import Dialog_Configuracion_Portatil
+from carritos.controller.controller_acercade import Dialog_Acercade
+from carritos.controller.controller_incidencia import Dialog_Incidencia
+from carritos.controller.controller_profesor import Dialog_Profesor
+
+from carritos.view.view import ICONO_ACERCADE, ICONO_APLICACION, \
+     LOGO_APLICACION, LOGO_IES 
 from carritos.view.view_carritos import Ui_Form
-from carritos.view.view_profesorado import Ui_Dialog_Profesorado
-from carritos.view.view_incidencias import Ui_Dialog_Incidencia
+
 from carritos.model.planta import Planta
 from carritos.model.carrito import Carrito
 from carritos.model.profesor import Profesor
 from carritos.model.reserva import Reserva
 from carritos.model.portatil import Portatil
 from carritos.model.incidencia import Incidencia
+from carritos.model.model import FICHERO_BD, CARRITOS_ESQUEMA
+from carritos.model.bd import Bd
 
-class Dialog_Incidencia(QtWidgets.QDialog):
-    
-    def __init__(self, fecha = None, horario = None, portatil_id = None, \
-                 profesor_id = None, observ = None, estado = None):
-        """Inicializa el diálogo de gestión de incidencias"""
-        
-        super(Dialog_Incidencia, self).__init__()
-        self.ui = Ui_Dialog_Incidencia()
-        self.ui.setupUi(self)
-        
-        self.ret = None
-        
-        # Carga de profesores.
-        self.poblar_profesor(profesor_id)
-        
-        # Fijar el horario.
-        self.fijar_horario(horario)
-        
-        # Observaciones de la incidencia (descripción).
-        if observ is not None: self.ui.textEdit_descripcion.setText(str(observ))
-        
-        # Fecha del calendario.
-        self.fijar_fecha(fecha)
-        
-        # Estado de la incidencia.
-        self.fijar_estado(estado)
-        
-        # Poblar plantas y carritos.
-        if portatil_id is not None:
-            planta_id, carrito_id = self.poblar_portatil(portatil_id)
-            self.poblar_planta(planta_id)
-            self.poblar_carrito(carrito_id)
-        else:
-            self.poblar_planta()
-            self.poblar_carrito()
-
-        # Poblar portátiles.
-        self.poblar_portatil()
-        if portatil_id is not None:
-            self.posicionar_combo(self.ui.comboBox_portatil, portatil_id)            
-        
-        # Connects de combos.
-        self.ui.comboBox_planta.currentIndexChanged \
-            .connect(self.OnPoblarCarrito)
-        
-        self.ui.comboBox_carrito.currentIndexChanged \
-            .connect(self.OnPoblarPortatil)
-        
-        # Connects de botones.
-        self.ui.pushButton_aceptar.clicked.connect(lambda: self.OnTerminar("a"))
-        self.ui.pushButton_borrar.clicked.connect(lambda: self.OnTerminar("b"))
-        self.ui.pushButton_cancelar.clicked.connect(lambda: \
-                                                    self.OnTerminar("c"))
-       
-    def obtener_fecha(self):
-        """Devuelve la fecha seleccionada en el calendario"""
-        
-        fecha_sel = self.ui.calendarWidget.selectedDate()
-        ret = "{}_{}_{}".format(fecha_sel.year(), \
-                                str(fecha_sel.month()).zfill(2), \
-                                str(fecha_sel.day()).zfill(2))
-        
-        return ret
-    
-    def poblar_planta(self, planta_id = None):
-        """Se puebla el combo de plantas y si planta_id no es Nulo se posiciona
-        en dicha planta."""
-        
-        self.ui.comboBox_planta.clear()
-    
-        ret = Planta().recupera_plantas() 
-        
-        # Se puebla el combo.
-        if not (ret is None or ret == []):
-            for i in ret:
-                id_ = str(i[0])
-                nombre = str(i[1])
-                self.ui.comboBox_planta.addItem(nombre, id_)
-        
-        # Se posiciona.
-        self.posicionar_combo(self.ui.comboBox_planta, planta_id)
-        
-    def poblar_carrito(self, carrito_id = None):
-        """Se puebla el combo de carritos y si carrito_id no es nulo se
-        posiciona en dicho carrito.
-        """
-        
-        self.ui.comboBox_carrito.clear()
-    
-        planta_id = self.ui.comboBox_planta.currentData()
-        ret = Carrito().recupera_carritos(planta_id)
-        
-        # Se puebla el combo.
-        if not (ret is None or ret == []):
-            for i in ret:
-                id_ = str(i[0])
-                nombre = str(i[1])
-                self.ui.comboBox_carrito.addItem(nombre, id_)
-                
-        # Se posiciona.
-        self.posicionar_combo(self.ui.comboBox_carrito, carrito_id)
-                
-    def poblar_portatil(self, portatil_id = None):
-        """Se puebla los portátiles."""
-        
-        ret = None, None
-            
-        self.ui.comboBox_portatil.clear()
-    
-        if portatil_id is None:
-            # Se carga el combo del portátil a partir del carrito_id.
-            carrito_id = self.ui.comboBox_carrito.currentData()
-            datos = Portatil().recupera_portatiles(carrito_id)
-            
-            # Se puebla el combo.
-            if not (datos is None or datos == []):
-                for i in datos:
-                    id_ = str(i[2])
-                    marca = "{} - {}".format(id_, str(i[3]))
-                    self.ui.comboBox_portatil.addItem(marca, id_)                
-            
-        else:
-            # Se devuelve el carrito y la planta donde está ubicado el
-            # portátil.
-            ret = Portatil().recupera_portatiles(portatil_id = portatil_id)
-            
-            if not ret == []:
-             
-                planta_id = ret[0][1]
-                carrito_id = ret[0][0]
-            
-                ret = planta_id, carrito_id
-            
-        # Posicionar el portátil.
-        # self.posicionar_combo(self.ui.comboBox_portatil, portatil_id)
-                
-        return ret
-    
-    def fijar_estado(self, estado):
-        """Si el estado no es nulo, se visualiza el mismo en el combo de
-        estados."""
-        
-        self.posicionar_combo(self.ui.comboBox_estado, estado, "texto")
-    
-    def fijar_fecha(self, fecha):
-        """Si la fecha no es nula, se posiciona en el calendario"""
-        
-        if fecha is not None:
-            
-            anno, mes, dia = fecha.split("_")
-            
-            fecha_calendario = QDate(int(anno), int(mes), int(dia))
-            self.ui.calendarWidget.setSelectedDate(fecha_calendario)            
-        
-    def fijar_horario(self, horario):
-        """Si horario no es nulo, se posiciona en el combo de dicho horario"""
-        
-        if str(horario) == "0": horario = "RECREO"
-        self.posicionar_combo(self.ui.comboBox_horario, horario, "texto")
-                
-    def poblar_profesor(self, profesor_id):
-        """Se puebla con los profesores y profesoras. Si profesor_id no es nulo
-        se posiciona el combo en el profesor_id.
-        """
-        
-        self.ui.comboBox_profesor.clear()
-    
-        ret = Profesor().recupera_profesores()
-        
-        # Se puebla el combo.
-        if not (ret is None or ret == []):
-            for i in ret:
-                id_ = str(i[0])
-                nombre_profesor = str(i[1])
-                self.ui.comboBox_profesor.addItem(nombre_profesor, id_)
-                
-        # Nos posicionamos en el profesor pasado como parámetro.
-        self.posicionar_combo(self.ui.comboBox_profesor, profesor_id)
-        
-    def posicionar_combo(self, combo, dato, tipo="dato"):
-        """Posiciona el combo en el elemento dato. Si tipo ="texto" realiza
-        la búsqueda por el texto del combo. Si tipo ="dato" realiza la búsqueda
-        por el id del texto del combo.
-        """
-        
-        if dato is not None:
-            if tipo == "dato": indice = combo.findData(dato)
-            if tipo == "texto": indice = combo.findText(dato)
-            if indice >= 0:
-                combo.setCurrentIndex(indice)            
-        
-    def OnPoblarPortatil(self):
-        """Código asociado al evento de modificar el combo de carritos"""
-        
-        self.poblar_portatil()
-        
-    def OnPoblarCarrito(self):
-        """Código asociado al evento de modificar el combo de plantas"""
-        
-        self.poblar_carrito()
-        
-    def OnTerminar(self, operacion):
-        """Devuelve una estructura con la información para dar de alta o
-        modificar una la incidencia, borrarla o cancelar la operación.
-        
-        operacion:
-                  'a' -> Dar de alta o modificar la incidencia.
-                  'b' -> Borrar la incidencia.
-                  'c' -> Cancelar la operación.
-        """
-        
-        if operacion == "c":
-            pass
-        
-        else:
-            fecha = self.obtener_fecha()
-            observ = self.ui.textEdit_descripcion.toPlainText()
-            portatil_id = self.ui.comboBox_portatil.currentData()
-            horario = self.ui.comboBox_horario.currentText()
-            if horario == "RECREO": horario = 0
-            estado = self.ui.comboBox_estado.currentText()
-            profesor_id = self.ui.comboBox_profesor.currentData()
-            
-            self.ret = {'fecha' : fecha,
-                   'portatil_id': portatil_id,
-                   'profesor_id': profesor_id,
-                   'observ': observ,
-                   'horario_id': horario,
-                   'estado': estado,
-                   'operacion': operacion}
-            
-        self.accept()  
-    
-class Dialog_Profesor(QtWidgets.QDialog):
-    
-    def __init__(self, profesorado =[]):
-        
-        super(Dialog_Profesor, self).__init__()
-        self.ui = Ui_Dialog_Profesorado()
-        self.ui.setupUi(self)
-        
-        self.profesorado = profesorado
-        self.ret = {"opcion": "c",
-                    "profesor_id": None}
-        
-        # Cargamos datos.
-        self.__poblar()
-        
-        # Connects
-        self.ui.pushButton_reservar.\
-            clicked.connect(lambda: self.OnClickedAccion("r"))
-        self.ui.pushButton_borrar.\
-            clicked.connect(lambda: self.OnClickedAccion("b"))
-        self.ui.pushButton_cancelar.\
-            clicked.connect(lambda: self.OnClickedAccion("c"))
-        self.ui.tableWidget_profesorado.\
-            doubleClicked.connect(lambda: self.OnClickedAccion("r"))
-
-    def __obtener_id(self):
-        """Obtiene el identificador del profesor"""
-
-        fila = self.ui.tableWidget_profesorado.currentRow()
-        if fila >= 0:
-            ret = self.ui.tableWidget_profesorado.item(fila, 0).text()
-        else: ret = None
-
-        return ret
-    
-    def __poblar(self):
-        """Se puebla con los profesores y profesoras"""
-        
-        # Se hace no visible la numeración de las filas.
-        self.ui.tableWidget_profesorado.verticalHeader().setVisible(False)
-        
-        self.ui.tableWidget_profesorado.setColumnHidden(0, True)
-        self.ui.tableWidget_profesorado.setColumnWidth(1,341)
-        self.ui.tableWidget_profesorado.setRowCount(len(self.profesorado))
-        
-        # Poblamos.
-        fila = -1
-        for profesor in self.profesorado:
-            
-            fila += 1
-            
-            for col in range(2):
-                
-                item = str(profesor[col])
-                
-                self.ui\
-                    .tableWidget_profesorado\
-                    .setItem(fila, col, QtWidgets.QTableWidgetItem(item))
-
-    def OnProfesorado(self):
-        """Selecciona el profesor con doble click de ratón"""
-        
-        self.OnClickedReservar()
-        
-    def OnClickedAccion(self, opcion):
-        """Devuelve un diccionario, especificando la operación a realizar y
-        el identificador del profesor/a:
-        
-        opcion:
-          'r' se crea la reserva,
-          'b' se borra la reserva,
-          'c' se cancela la operación.
-        """
-        
-        self.ret = {'opcion': opcion,
-                    'profesor_id': self.__obtener_id()}
-        self.accept()       
-
-                                        
 class VentanaPrincipal(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         """Inicializa la ventana principal de la aplicación"""
@@ -350,6 +57,16 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        
+        # self.ui.label_inicio.setPixmap(QtGui.QPixmap(LOGO_APLICACION))
+        icono_app = QtGui.QIcon(ICONO_APLICACION)
+        self.setWindowIcon(icono_app)
+        
+        # Estado de la base de datos.
+        if not self.estado_bd(): sys.exit()
+        
+        # Se aplica la configuración general de la aplicación.       
+        self.conf_apl()
         
         # Carga de datos.
         self.poblar_planta()
@@ -360,6 +77,30 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         
         # Carga de incidencias.
         self.poblar_incidencia()
+        
+        # Carga de configuración de profesorado, plantas, carritos y portátiles.
+        self.poblar_configuracion_profesorado()
+        self.poblar_configuracion_planta()
+        self.poblar_configuracion_carrito()
+        self.poblar_configuracion_portatil()
+        
+        # Connect de Acerca de
+        self.ui.pushButton_acercade.clicked.connect(self.acercade)
+        
+        # Connects de configuración de profesorado, plantas, carritos,
+        # portátiles, y configuración de la aplicación.
+        self.ui.tableWidget_profesorado.doubleClicked.\
+            connect(lambda: self.OnConfiguracion("editar"))
+        self.ui.tableWidget_planta.doubleClicked.\
+            connect(lambda: self.OnConfiguracion("editar"))
+        self.ui.tableWidget_carrito.doubleClicked.\
+            connect(lambda: self.OnConfiguracion("editar"))
+        self.ui.tableWidget_portatil.doubleClicked.\
+            connect(lambda: self.OnConfiguracion("editar"))
+        self.ui.tabWidget_conf.currentChanged.connect(self.OnCambiarVentanaConf)
+        self.ui.pushButton_guardar_conf.clicked.connect(self.OnGuardarConf)
+        self.ui.pushButton_logo.clicked.connect(self.OnCambiarLogo)
+        self.ui.pushButton_exportar_bd.clicked.connect(self.OnExportar)
         
         # Connects de combos.
         self.ui.comboBox_planta.currentIndexChanged\
@@ -388,7 +129,344 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         # Connects de la tabla de incidencias.
         self.ui.tableWidget_incidencia.\
         doubleClicked.connect(lambda: self.OnGestionarIncidencia("modificar"))
+        
+        # Connects de configuración.
+        self.ui.pushButton_crear_conf.clicked.connect(self.OnConfiguracion)
+        
+    def estado_bd(self):
+        """Comprueba si la base de datos existe. En caso contrario genera
+        una base de datos vacía"""
+        
+        seguir = True
+        
+        if not f_exists(FICHERO_BD):
+            
+            bd = Bd(FICHERO_BD)
+            bd.conectar()
+            ret = bd.ejecutar_sql(cadenaSQL= CARRITOS_ESQUEMA,\
+                                  tipo = "executescript")
+            if not ret[0]:
+
+                msg = 'No se encuentra el fichero de base de datos.'+\
+                    'Se ha intentado crear uno nuevo pero no es'+\
+                    'posible. La aplicación no puede continuar!!!'
+                QtWidgets.QMessageBox.warning(self, 'Alerta', msg)
                 
+                f_borrar_fichero(FICHERO_BD)
+                
+                seguir = False
+
+            else:
+
+                msg = "No se encuentra el fichero de base de datos." +\
+                    "Se ha generado correctamente uno nuevo vacío"
+                QtWidgets.QMessageBox.warning(self, 'Alerta', msg)
+                
+            bd.desconectar()
+            
+        return seguir
+            
+    def OnExportar(self):
+        """Exporta la base de datos"""
+        
+        dialog = QtWidgets.QFileDialog()
+        dialog.setFileMode(QtWidgets.QFileDialog.Directory)
+        
+        if dialog.exec_():
+            
+            directorio = dialog.selectedFiles()[0]
+            
+            destino = "{}/{}".format(directorio, "carritos.db")
+    
+            try:
+                shutil.copy2(FICHERO_BD, destino)
+                QtWidgets.QMessageBox.information(self, 'Información', \
+                                 'Exportación realizada con éxito')
+            except:
+                QtWidgets.QMessageBox.warning(self, 'Alerta', \
+                                 'La exportación ha fallado')                
+        
+    def OnCambiarLogo(self):
+        """Selecciona un fichero PNG que será el logo del IES"""
+        
+        opciones = QtWidgets.QFileDialog.Options()
+        opciones |= QtWidgets.QFileDialog.ReadOnly
+        nfich, _ = QtWidgets.QFileDialog.\
+            getOpenFileName(self, 'Seleccionar Imagen', '', \
+                            'Archivos PNG (*.png)', options=opciones)
+        
+        if nfich:
+            shutil.copy(nfich, LOGO_IES)
+            self.ui.label_logo.setPixmap(QtGui.QPixmap(LOGO_IES))
+            self.aplicar_cambios_conf()
+
+    def __guardar_conf_json(self, nombre_ies, logo_ies, anio_inicio, anio_fin, \
+                            mes_inicio, mes_fin, logo_inicio, logo_informes):
+        """Guarda en JSON la configuración del aplicativo"""
+
+        configuracion = {
+            "nombre_ies": nombre_ies,
+            "logo_ies": logo_ies,
+            "anio_inicio": anio_inicio,
+            "mes_inicio": mes_inicio, 
+            "anio_fin": anio_fin,
+            "mes_fin": mes_fin,
+            "logo_inicio": logo_inicio,
+            "logo_informes" : logo_informes
+            }            
+        
+        f = open("carritos.json", "w")
+        json.dump(configuracion, f)
+        f.close()
+        
+    def OnGuardarConf(self):
+        """Guarda la configuración de la aplicación en un JSON"""
+        
+        nombre_ies = self.ui.lineEdit_ies.text().strip()
+        anio_inicio = self.ui.spinBox_inicio.value()
+        anio_fin = self.ui.spinBox_fin.value()
+        mes_inicio = self.ui.comboBox_inicio_curso.currentText()
+        mes_fin =  self.ui.comboBox_fin_curso.currentText()
+        logo_inicio = True if self.ui.checkBox_inicio.isChecked() else False
+        logo_informes = True if self.ui.checkBox_informes.isChecked() else False
+        logo_ies = LOGO_IES
+    
+        self.__guardar_conf_json(nombre_ies, logo_ies, anio_inicio, anio_fin, \
+                                 mes_inicio, mes_fin, logo_inicio, \
+                                 logo_informes)
+        
+        self.aplicar_cambios_conf()
+        
+    def conf_apl(self):
+        """Recupera del fichero de configuración los datos básicos de la
+        aplicación"""
+        
+        if not f_exists("carritos.json"):
+            
+            anio_actual = datetime.datetime.now().year
+            mes_actual = datetime.datetime.now().month
+            
+            if mes_actual > 6:
+                anio_inicio = anio_actual
+                anio_fin = anio_actual + 1
+            else:
+                anio_inicio = anio_actual - 1
+                anio_fin = anio_actual              
+                
+            mes_inicio = "Septiembre"
+            mes_fin = "Junio"
+            nombre_ies = "IES"
+            logo_ies = LOGO_IES
+            logo_informes = True
+            logo_inicio = False
+          
+            self.__guardar_conf_json(nombre_ies, logo_ies, anio_inicio, \
+                                     anio_fin, mes_inicio, mes_fin, \
+                                     logo_inicio, logo_informes)
+            
+        else:
+            f = open("carritos.json", "r")
+            configuracion = json.load(f)
+        
+            nombre_ies = configuracion["nombre_ies"]
+            logo_ies = configuracion["logo_ies"]
+            anio_inicio = configuracion["anio_inicio"]
+            mes_inicio = configuracion["mes_inicio"]
+            anio_fin = configuracion["anio_fin"]
+            mes_fin = configuracion["mes_fin"]
+            logo_inicio = configuracion["logo_inicio"]
+            logo_informes = configuracion["logo_informes"]
+            f.close()
+            
+        # Se rellena el mantenimiento de la aplicación.
+        self.ui.lineEdit_ies.setText(str(nombre_ies).strip())
+        self.ui.label_logo.setPixmap(QtGui.QPixmap(logo_ies))
+        self.ui.spinBox_inicio.setValue(int(anio_inicio))
+        self.ui.spinBox_fin.setValue(int(anio_fin))
+        self.posicionar_combo(self.ui.comboBox_inicio_curso, \
+                              mes_inicio, "texto")
+        self.posicionar_combo(self.ui.comboBox_fin_curso, \
+                              mes_fin, "texto")
+        if logo_inicio: self.ui.checkBox_inicio.setChecked(True)
+        else: self.ui.checkBox_inicio.setChecked(False)
+        if logo_informes: self.ui.checkBox_informes.setChecked(True)
+        else: self.ui.checkBox_informes.setChecked(False)
+                
+        self.aplicar_cambios_conf()
+                        
+    def aplicar_cambios_conf(self):
+        """Aplica los cambios generados en la configuración de la aplicación"""
+        
+        nombre_ies = self.ui.lineEdit_ies.text().strip()
+        self.setWindowTitle("carritos - {}".format(nombre_ies))
+        
+        if self.ui.checkBox_inicio.isChecked():
+            self.ui.label_inicio.setPixmap(QtGui.QPixmap(LOGO_IES))
+        else:
+            self.ui.label_inicio.setPixmap(QtGui.QPixmap(LOGO_APLICACION))
+        
+    def posicionar_combo(self, combo, dato, tipo="dato"):
+        """Posiciona el combo en el elemento dato. Si tipo ="texto" realiza
+        la búsqueda por el texto del combo. Si tipo ="dato" realiza la búsqueda
+        por el id del texto del combo.
+        """
+        
+        if dato is not None:
+            if tipo == "dato": indice = combo.findData(dato)
+            if tipo == "texto": indice = combo.findText(dato)
+            if indice >= 0:
+                combo.setCurrentIndex(indice)           
+                    
+    def acercade (self):
+        """Muestra un diálogo sobre la autoría de la aplicación"""
+        
+        dialog =  Dialog_Acercade(ICONO_ACERCADE)
+        dialog.exec_()
+        
+    def poblar_configuracion_profesorado(self):
+        """Se puebla con los profesores y profesoras"""
+        
+        profesorado = Profesor().recupera_profesores()
+        
+        # Se desactiva el orden de columnas y se limpian filas.
+        self.ui.tableWidget_profesorado.setSortingEnabled(False)
+        self.ui.tableWidget_profesorado.setRowCount(0)
+        
+        # Se hace no visible la numeración de las filas.
+        self.ui.tableWidget_profesorado.verticalHeader().setVisible(False)
+        
+        self.ui.tableWidget_profesorado.setColumnHidden(0, True)
+        self.ui.tableWidget_profesorado.setColumnWidth(1,800)
+        self.ui.tableWidget_profesorado.setRowCount(len(profesorado))
+        
+        # Poblamos.
+        fila = -1
+        for profesor in profesorado:
+            
+            fila += 1
+            
+            for col in range(2):
+                
+                item = str(profesor[col])
+                
+                self.ui\
+                    .tableWidget_profesorado\
+                    .setItem(fila, col, QtWidgets.QTableWidgetItem(item))
+                
+        self.ui.tableWidget_profesorado.setSortingEnabled(True)
+    
+    def poblar_configuracion_planta(self):
+        """Se puebla con las plantas del IES"""
+        
+        plantas = Planta().recupera_plantas()
+        
+        # Se desactiva el orden de columnas y se limpian filas.
+        self.ui.tableWidget_planta.setSortingEnabled(False)
+        self.ui.tableWidget_planta.setRowCount(0)
+        
+        # Se hace no visible la numeración de las filas.
+        self.ui.tableWidget_planta.verticalHeader().setVisible(False)
+        
+        self.ui.tableWidget_planta.setColumnHidden(0, True)
+        self.ui.tableWidget_planta.setColumnWidth(1,800)
+        self.ui.tableWidget_planta.setRowCount(len(plantas))
+        
+        # Poblamos.
+        fila = -1
+        for planta in plantas:
+            
+            fila += 1
+            
+            for col in range(2):
+                
+                item = str(planta[col])
+                
+                self.ui\
+                    .tableWidget_planta\
+                    .setItem(fila, col, QtWidgets.QTableWidgetItem(item))
+                
+        self.ui.tableWidget_planta.setSortingEnabled(True)
+                
+    def poblar_configuracion_carrito(self):
+        """Se pueblan todos los carritos del IES"""
+        
+        carritos = Carrito().recupera_carritos()
+        
+        # Se desactiva el orden de columnas y se limpian filas.
+        self.ui.tableWidget_carrito.setSortingEnabled(False)
+        self.ui.tableWidget_carrito.setRowCount(0)
+        
+        # Se hace no visible la numeración de las filas.
+        self.ui.tableWidget_carrito.verticalHeader().setVisible(False)
+        
+        self.ui.tableWidget_carrito.setColumnHidden(0, True) # Id Carrito
+        self.ui.tableWidget_carrito.setColumnHidden(2, True) # Id Planta
+                
+        self.ui.tableWidget_carrito.setColumnWidth(1,200)   # Carrito
+        self.ui.tableWidget_carrito.setColumnWidth(3,200)   # Planta
+        self.ui.tableWidget_carrito.setColumnWidth(4,350)   # Observaciones
+                
+        self.ui.tableWidget_carrito.setRowCount(len(carritos))
+        
+        # Poblamos.
+        fila = -1
+        for carrito in carritos:
+            
+            fila += 1
+            
+            for col in range(5):
+                
+                
+                item = "" if carrito[col] is None else str(carrito[col])
+                
+                self.ui\
+                    .tableWidget_carrito\
+                    .setItem(fila, col, QtWidgets.QTableWidgetItem(item))
+                
+        self.ui.tableWidget_carrito.setSortingEnabled(True)
+
+    def poblar_configuracion_portatil(self):
+        """Se pueblan todos los portátiles del IES"""
+        
+        portatiles = Portatil().recupera_portatiles()
+        
+        # Se desactiva el orden de columnas y se limpian filas.
+        self.ui.tableWidget_portatil.setSortingEnabled(False)
+        self.ui.tableWidget_portatil.setRowCount(0)
+        
+        # Se hace no visible la numeración de las filas.
+        self.ui.tableWidget_portatil.verticalHeader().setVisible(False)
+        
+        self.ui.tableWidget_portatil.setColumnHidden(0, True) # Id Portátil
+        self.ui.tableWidget_portatil.setColumnHidden(3, True) # Id Carrito
+        self.ui.tableWidget_portatil.setColumnHidden(5, True) # Id Planta
+                
+        self.ui.tableWidget_portatil.setColumnWidth(1,100)   # Marca
+        self.ui.tableWidget_portatil.setColumnWidth(2,100)   # Nº Serie
+        self.ui.tableWidget_portatil.setColumnWidth(4,100)   # Carrito
+        self.ui.tableWidget_portatil.setColumnWidth(6,100)   # Planta
+        self.ui.tableWidget_portatil.setColumnWidth(7,150)   # Estado
+        self.ui.tableWidget_portatil.setColumnWidth(8,200)   # Observaciones
+                
+        self.ui.tableWidget_portatil.setRowCount(len(portatiles))
+        
+        # Poblamos.
+        fila = -1
+        for portatil in portatiles:
+            
+            fila += 1
+            
+            for col in range(9):
+                
+                
+                item = "" if portatil[col] is None else str(portatil[col])
+                
+                self.ui\
+                    .tableWidget_portatil\
+                    .setItem(fila, col, QtWidgets.QTableWidgetItem(item))
+                
+        self.ui.tableWidget_portatil.setSortingEnabled(True)
+        
     def poblar_planta(self):
         """Se puebla el combo de plantas"""
         
@@ -416,7 +494,11 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             for i in ret:
                 carrito_id = str(i[0])
                 nombre_carrito = str(i[1])
+                # info = str(i[4])
                 self.ui.comboBox_carrito.addItem(nombre_carrito, carrito_id)
+                # self.ui.plainTextEdit_info.setPlainText(info)
+        #else:
+        #    self.ui.plainTextEdit_info.setPlainText("")
                 
     def cargar_reservas(self):
         """Busca las reservas del carrito seleccionado en el calendario, y
@@ -426,8 +508,20 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         carrito_id = self.ui.comboBox_carrito.currentData() 
         fecha = self.obtener_fecha()
         
-        reservas = Reserva().recupera_reservas(carrito_id, fecha)
+        # Recuperamos la información de los carritos.
+        # info = Carrito().recupera_carritos(carrito_id=carrito_id)[0][4]
+        info = Carrito().recupera_carritos(carrito_id=carrito_id)
+        info = "" if len(info) == 0 else info[0][4]
+        self.ui.plainTextEdit_info.setPlainText(info)
         
+        # Recuperamos las reservas
+        reservas = Reserva().recupera_reservas(carrito_id, fecha)
+       
+        #if len(reservas) > 0:
+        #    self.ui.plainTextEdit_info.setPlainText(reservas[0][9])
+        #else:
+        #    self.ui.plainTextEdit_info.setPlainText("")
+            
         for caja in [self.ui.plainTextEdit_1, self.ui.plainTextEdit_2, \
                      self.ui.plainTextEdit_3, self.ui.plainTextEdit_RECREO, \
                      self.ui.plainTextEdit_4, self.ui.plainTextEdit_5, \
@@ -506,11 +600,11 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         if fila >= 0:
             
             incidencia_id = self.ui.tableWidget_incidencia.item(fila, 0).text()
-            fecha = self.ui.tableWidget_incidencia.item(fila, 10).text() 
-            horario_id = self.ui.tableWidget_incidencia.item(fila, 3).text()
+            fecha = self.ui.tableWidget_incidencia.item(fila, 11).text() 
+            horario_id = self.ui.tableWidget_incidencia.item(fila, 12).text()
             portatil_id = self.ui.tableWidget_incidencia.item(fila, 1).text()
-            observ = self.ui.tableWidget_incidencia.item(fila, 4).text()
-            estado = self.ui.tableWidget_incidencia.item(fila, 9).text()
+            observ = self.ui.tableWidget_incidencia.item(fila, 3).text()
+            estado = self.ui.tableWidget_incidencia.item(fila, 10).text()
             profesor_id = self.ui.tableWidget_incidencia.item(fila, 2).text()
             
             ret = incidencia_id, fecha, horario_id, portatil_id, \
@@ -617,8 +711,13 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
                     # Para crear una incidencia se debe de seleccionar el portátil 
                     # que tiene el problema y el profesor que crea la incidencia.
                 
-                    pass
-                
+                    QtWidgets.\
+                        QMessageBox.warning(self, 'Advertencia', \
+                                            'La incidencia debe de tener:\n'+\
+                                            ' - Descripción.\n'+\
+                                            ' - Portátil afectado.\n'+\
+                                            ' - Profesor/a responsable.')
+                    
                 else:
                     
                     incidencia = Incidencia()
@@ -678,19 +777,21 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         self.ui.tableWidget_incidencia.setRowCount(0)
         
         # Ocultamos algunas columnas.
-        self.ui.tableWidget_incidencia.setColumnHidden(0, True)
-        self.ui.tableWidget_incidencia.setColumnHidden(1, True)
-        self.ui.tableWidget_incidencia.setColumnHidden(2, True)
-        self.ui.tableWidget_incidencia.setColumnHidden(3, True)
-        self.ui.tableWidget_incidencia.setColumnHidden(6, True)
-        self.ui.tableWidget_incidencia.setColumnHidden(10, True)
+        self.ui.tableWidget_incidencia.setColumnHidden(0, True) # Incidencia ID
+        self.ui.tableWidget_incidencia.setColumnHidden(1, True) # Portátil ID
+        self.ui.tableWidget_incidencia.setColumnHidden(2, True) # Profesor ID
+        self.ui.tableWidget_incidencia.setColumnHidden(7, True) # Estado portát.
+        self.ui.tableWidget_incidencia.setColumnHidden(11, True) # Fecha ID.
+        self.ui.tableWidget_incidencia.setColumnHidden(12, True) # Horario ID.
         
         # Se define el tamaño de cada columna.
-        self.ui.tableWidget_incidencia.setColumnWidth(4,350) # Descripción.
-        self.ui.tableWidget_incidencia.setColumnWidth(5,150) # ID del portátil.
-        self.ui.tableWidget_incidencia.setColumnWidth(7,120) # Fecha.
-        self.ui.tableWidget_incidencia.setColumnWidth(8,90)  # Franja horaria.
-        self.ui.tableWidget_incidencia.setColumnWidth(9,100) # Estado.
+        self.ui.tableWidget_incidencia.setColumnWidth(3,200) # Descripción.
+        self.ui.tableWidget_incidencia.setColumnWidth(4,75) # Planta.
+        self.ui.tableWidget_incidencia.setColumnWidth(5,75) # Carrito.
+        self.ui.tableWidget_incidencia.setColumnWidth(6,150) # ID del portátil.
+        self.ui.tableWidget_incidencia.setColumnWidth(8,120) # Fecha.
+        self.ui.tableWidget_incidencia.setColumnWidth(9,90)  # Franja horaria.
+        self.ui.tableWidget_incidencia.setColumnWidth(10,100) # Estado inciden.
         
         # Definimos el número de filas.
         self.ui.tableWidget_incidencia.setRowCount(len(incidencias))
@@ -703,7 +804,7 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             
             fila += 1
             
-            for col in range(11):
+            for col in range(13):
                 
                 item = str(incidencia[col])
                 
@@ -713,3 +814,237 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         
         # Puede hacerse clasificación.
         self.ui.tableWidget_incidencia.setSortingEnabled(True)
+
+    #def __lanzar_configuracion(self, opcion):
+        #"""Configuración de las tablas maestras del aplicativo"""
+        
+        #dialog = Dialog_Configuracion(opcion=opcion)
+        #dialog.exec_()        
+        
+    def __conf_profesorado(self, opcion):
+        """Configuración de mantenimiento de profesorado"""
+ 
+        if opcion == "editar":
+            
+            fila = self.ui.tableWidget_profesorado.currentRow()
+            if fila >= 0:
+                id_ = self.ui.tableWidget_profesorado.item(fila, 0).\
+                    text()
+                nombre = self.ui.tableWidget_profesorado.item(fila, 1).\
+                    text() 
+                
+                dialog = Dialog_Configuracion(nombre=nombre, id_=id_)
+        else:
+            
+            dialog = Dialog_Configuracion()
+         
+        dialog.exec_()        
+                    
+        if dialog.ret["operacion"] is None \
+           or (dialog.ret["operacion"] == "borrar" \
+               and dialog.ret["id_"] is None):
+            pass
+        
+        elif dialog.ret["operacion"] == "borrar":
+            # Se intenta eliminar.
+            elemento = Profesor()
+            elemento.borra_profesor(dialog.ret["id_"])
+                
+        
+        elif dialog.ret["operacion"] == "alta" and dialog.ret["id_"] is None:
+            # Se intenta dar de alta.
+            elemento = Profesor()
+            elemento.crea_profesor(dialog.ret["nombre"])
+                            
+        elif dialog.ret["operacion"] == "alta" and \
+             dialog.ret["id_"] is not None:
+            # Se intenta modificar.
+            elemento = Profesor()
+            elemento.modifica_profesor(nombre, dialog.ret["nombre"])
+            
+        self.poblar_configuracion_profesorado()
+
+    def __conf_planta(self, opcion):
+        """Configuración de mantenimiento de planta"""
+ 
+        if opcion == "editar":
+            
+            fila = self.ui.tableWidget_planta.currentRow()
+            if fila >= 0:
+                id_ = self.ui.tableWidget_planta.item(fila, 0).\
+                    text()
+                nombre = self.ui.tableWidget_planta.item(fila, 1).\
+                    text() 
+                
+                dialog = Dialog_Configuracion(nombre=nombre, id_=id_)
+        else:
+            
+            dialog = Dialog_Configuracion()
+         
+        dialog.exec_()        
+                    
+        if dialog.ret["operacion"] is None \
+           or (dialog.ret["operacion"] == "borrar" \
+               and dialog.ret["id_"] is None):
+            pass
+        
+        elif dialog.ret["operacion"] == "borrar":
+            # Se intenta eliminar.
+            elemento = Planta()
+            elemento.borra_planta(dialog.ret["id_"])
+                
+        
+        elif dialog.ret["operacion"] == "alta" and dialog.ret["id_"] is None:
+            # Se intenta dar de alta.
+            elemento = Planta()
+            elemento.crea_planta(dialog.ret["nombre"])
+                            
+        elif dialog.ret["operacion"] == "alta" and \
+             dialog.ret["id_"] is not None:
+            # Se intenta modificar.
+            elemento = Planta()
+            elemento.modifica_planta(nombre, dialog.ret["nombre"])
+            
+        self.poblar_configuracion_planta()
+        self.poblar_planta()
+ 
+    def __conf_carrito(self, opcion):
+        """Configuración de mantenimiento de carrito"""
+ 
+        if opcion == "editar":
+            
+            fila = self.ui.tableWidget_carrito.currentRow()
+            if fila >= 0:
+                carrito_id = self.ui.tableWidget_carrito.item(fila, 0).\
+                    text()
+                carrito_nombre = self.ui.tableWidget_carrito.item(fila, 1).\
+                    text()
+                planta_id = self.ui.tableWidget_carrito.item(fila, 2).\
+                    text()
+                carrito_observ = self.ui.tableWidget_carrito.item(fila, 4).\
+                    text()
+                
+                dialog = \
+                    Dialog_Configuracion_Carrito(planta_id, carrito_nombre,\
+                                                 "" if carrito_observ is None \
+                                                 else carrito_observ)
+                
+        else:
+            
+            carrito_id = None
+            dialog = Dialog_Configuracion_Carrito()
+         
+        dialog.exec_()        
+                    
+        if dialog.ret["operacion"] is None \
+           or (dialog.ret["operacion"] == "borrar" \
+               and carrito_id is None):
+            pass
+        
+        elif dialog.ret["operacion"] == "borrar":
+            # Se intenta eliminar.
+            elemento = Carrito()
+            elemento.borra_carrito(carrito_id)
+        
+        elif dialog.ret["operacion"] == "alta" and carrito_id is None:
+            # Se intenta dar de alta.
+            elemento = Carrito()
+            elemento.crea_carrito(dialog.ret["carrito_nombre"], \
+                                  dialog.ret["planta_id"], \
+                                  dialog.ret["carrito_observ"])
+                            
+        elif dialog.ret["operacion"] == "alta" and carrito_id is not None:
+            # Se intenta modificar.
+            elemento = Carrito()
+            elemento.modifica_carrito(carrito_id,\
+                                      dialog.ret["carrito_nombre"],\
+                                      dialog.ret["planta_id"], \
+                                      dialog.ret["carrito_observ"])
+            
+        self.poblar_configuracion_carrito()
+        self.poblar_carrito()
+
+    def __conf_portatil(self, opcion):
+        """Configuración de mantenimiento de portátil"""
+ 
+        if opcion == "editar":
+            
+            fila = self.ui.tableWidget_portatil.currentRow()
+            if fila >= 0:
+                portatil_id = self.ui.tableWidget_portatil.item(fila, 0).\
+                    text()
+                carrito_id = self.ui.tableWidget_portatil.item(fila, 3).\
+                    text()
+                portatil_nserie = self.ui.tableWidget_portatil.item(fila, 2).\
+                    text()
+                portatil_marca = self.ui.tableWidget_portatil.item(fila, 1).\
+                    text()
+                portatil_estado = self.ui.tableWidget_portatil.item(fila, 7).\
+                    text()
+                portatil_observ = self.ui.tableWidget_portatil.item(fila, 8).\
+                    text()
+                
+                dialog = \
+                    Dialog_Configuracion_Portatil(carrito_id, portatil_nserie, \
+                                                  portatil_marca, \
+                                                  portatil_estado, \
+                                                  "" if portatil_observ is None\
+                                                  else portatil_observ)
+                
+        else:
+            
+            portatil_id = None
+            dialog = Dialog_Configuracion_Portatil()
+         
+        dialog.exec_()        
+                    
+        if dialog.ret["operacion"] is None \
+           or (dialog.ret["operacion"] == "borrar" \
+               and portatil_nserie is None):
+            pass
+        
+        elif dialog.ret["operacion"] == "borrar":
+            # Se intenta eliminar.
+            elemento = Portatil()
+            elemento.borra_portatil(portatil_nserie)
+        
+        elif dialog.ret["operacion"] == "alta" and portatil_id is None:
+            # Se intenta dar de alta.
+            elemento = Portatil()
+            elemento.crea_portatil(dialog.ret["portatil_nserie"], \
+                                   dialog.ret["carrito_id"], \
+                                   dialog.ret["portatil_marca"], \
+                                   dialog.ret["portatil_estado"], \
+                                   dialog.ret["portatil_observ"])
+                            
+        elif dialog.ret["operacion"] == "alta" and portatil_id is not None:
+            # Se intenta modificar.
+            elemento = Portatil()
+            elemento.modifica_portatil(dialog.ret["portatil_nserie"],\
+                                       dialog.ret["portatil_marca"], \
+                                       dialog.ret["portatil_estado"], \
+                                       dialog.ret["portatil_observ"], \
+                                       dialog.ret["carrito_id"], \
+                                       portatil_id)
+            
+        self.poblar_configuracion_portatil()
+        
+    def OnConfiguracion(self, opcion = "alta"):
+        """Abre ventana de configuración"""
+        
+        tab_actual = self.ui.tabWidget_conf.currentIndex()
+        
+        if tab_actual == 0: self.__conf_profesorado(opcion)
+        if tab_actual == 1: self.__conf_planta(opcion)
+        if tab_actual == 2: self.__conf_carrito(opcion)
+        if tab_actual == 3: self.__conf_portatil(opcion)
+        
+    def OnCambiarVentanaConf(self):
+        """Activa / desactiva botón crear en la parte de configuración de la
+        aplicación, dependiendo de la pestaña donde esté el foco.
+        """
+        
+        tab_actual = self.ui.tabWidget_conf.currentIndex()
+        boton_crear = False if tab_actual == 4 else True
+        self.ui.pushButton_crear_conf.setVisible(boton_crear)
+                        

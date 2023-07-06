@@ -29,53 +29,37 @@ class Portatil(DMLModelo):
         super().__init__(FICHERO_BD, FICHERO_LOG)
                    
     def crea_portatil(self, n_serie, carrito_id, marca, estado, observ):
-        """Crea un portátil, a partir de su número de serie), identificador del
+        """Crea un portátil, a partir de su número de serie, identificador del
         carrito donde está asignado, marca del portátil, estado del portátil,
         y observaciones sobre la máquina.
-        
-        "estado" puede tener los valores:
-            - "Disponible" -> El ordenador está listo para utilizarse.
-            - "No diponible" -> El ordenador no está para ser utilizado, pero
-                                sigue en el carrito.
-            - "En reparación" -> El ordenador no está en el carrito, está
-                                 en reparación.  
         """
         
         self.conectar()
         self.crea('portatil', \
-                  [('id', n_serie),\
-                   ('marca', marca),\
-                   ('estado', estado),\
-                   ('observ', observ),\
-                   ('carrito_id', carrito_id)])
+                  [('marca', marca), \
+                   ('estado', estado), \
+                   ('observ', observ), \
+                   ('carrito_id', carrito_id), \
+                   ('nserie', n_serie)])
         self.desconectar()
 
-    def borra_portatil(self, n_serie):
-        """Borra un portátil a partir de su número de serie."""
+    def borra_portatil(self, id_):
+        """Borra un portátil a partir de su id."""
         
         self.conectar()
-        self.borra('reserva', [('id', n_serie)])
+        self.borra('portatil', [('id', id_)])
         self.desconectar()
         
-    def modifica_portatil(self, nuevo, cambio, n_serie):
-        """Modifica una característica del portátil con número de serie n_serie.
+    def modifica_portatil(self, n_serie, marca, estado, observ, \
+                          carrito_id, id_):
+        """Modifica una característica del portátil a partir de su id_"""
         
-        nuevo -> Nuevo valor que se cambiará en el portátil.
+        atributos = [("nserie", n_serie), ("marca", marca),\
+                     ("estado", estado), ("observ", observ),\
+                     ("carrito_id", carrito_id)]
         
-        "cambio" indica a qué campo afectará el nuevo valor:
-        
-        cambio == 'n_serie' -> Cambia el id.
-        cambio == 'marca' -> Cambia la marca del portátil.
-        cambio == 'estado' -> Cambia el estado del portátil.
-        cambio == 'observ' -> Cambia las observaciones realizadas al portátil.
-        cambio == 'carrito' -> Realiza una nueva asignación de carrito.
-        """
-        
-        if cambio == "n_serie": aux = "id"
-        if cambio == "carrito": aux = "carrito_id"
-            
         self.conectar()
-        self.modifica("portatil", [(aux, nuevo)], [("id", n_serie)])
+        self.modifica("portatil", atributos, [("id", id_)])
         self.desconectar()
     
     def recupera_portatiles(self, carrito_id = None, portatil_id = None):
@@ -94,7 +78,7 @@ class Portatil(DMLModelo):
                 t.append(carrito_id)
                 
             if portatil_id is not None:
-                condicion += " n_serie = ? and "
+                condicion += " portatil_id = ? and "
                 t.append(portatil_id)
             
             condicion += " 1 = 1"
