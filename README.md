@@ -1,9 +1,69 @@
+<p align="center">
+  <img src="carritos/assets/img_doc/reportlab.png" alt="Logo Reportlab" width="100" height="40" style="margin-right: 50px;">  
+  <img src="carritos/assets/img_doc/python_qt.png" alt="Logo Python + Qt" width="50" height="40"style="margin-right: 50px;">
+  <img src="carritos/assets/img_doc/sqlite3.png" alt="Logo SQLite" width="60" height="40">
+</p>
+<p align="right">
+  <img src="carritos/assets/imagenes/carritos_icono_96.png" alt="Logo de la aplicación">
+</p>
 # carritos
 Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
+## Descripción
+
+Carritos es una aplicación para la gestión de carritos de portátiles en institutos de educación secundaria (IES) de la Junta de Andalucía. Permite llevar un registro de reservas, incidencias y generar informes relacionados con el uso de los portátiles.
+
+
+## Instalación
+
+Para instalar carritos, sigue estos pasos:
+
+1. Clona el repositorio desde GitHub:
+
+        git clone https://github.com/angeloide78/carritos.git
+
+2. Accede al directorio del proyecto:
+
+        cd carritos
+
+3. Instala las dependencias utilizando Pipenv:
+
+        pipenv install
+
+4. Ejecuta la aplicación:
+
+        pipenv run python main.py
+
+## Uso
+
+La aplicación se compone de diferentes pantallas y funcionalidades:
+
+ * Planificación y Reservas: Permite gestionar las reservas de carritos en un centro, por fecha, franja horaria y profesor que hace la reserva.
+
+ * Gestión de Incidencias: Permite registrar y gestionar las incidencias relacionadas con los portátiles.
+
+ * Informes: Genera informes detallados sobre el uso de los portátiles y las incidencias registradas.
+
+Para obtener más información sobre cómo utilizar cada funcionalidad, consulta la documentación incluida en el repositorio.
+
+## Contribución
+
+Si deseas contribuir al proyecto, sigue estos pasos:
+
+1. Crea un fork del repositorio.
+
+2. Realiza tus cambios en una rama separada.
+
+3. Envía un pull request describiendo los cambios realizados.
+
+Agradecemos todas las contribuciones y comentarios constructivos.
+
+## Licencia
+
+Este proyecto está licenciado bajo la licencia [GNU GPL 3]( https://www.gnu.org/licenses/gpl-3.0.html)
 # Roadmap del Proyecto
 
-## Mejoras que podrian realizarse en futuras versiones
+## Mejoras que podrían realizarse en futuras versiones
 
   - [ ] En Planificación y Reservas, si un día tiene las franjas de 1,2,3,4,5 y 6 reservadas (sin contar el recreo), el día en el calendario debe de pintarse de rojo.
 
