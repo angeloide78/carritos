@@ -21,21 +21,27 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QDate
 
 from carritos.view.view_incidencias import Ui_Dialog_Incidencia
-from carritos.model.planta import Planta
-from carritos.model.carrito import Carrito
-from carritos.model.profesor import Profesor
-from carritos.model.portatil import Portatil
+from carritos.model.model_planta import Planta
+from carritos.model.model_carrito import Carrito
+from carritos.model.model_profesor import Profesor
+from carritos.model.model_portatil import Portatil
 
 class Dialog_Incidencia(QtWidgets.QDialog):
     
     def __init__(self, fecha = None, horario = None, portatil_id = None, \
-                 profesor_id = None, observ = None, estado = None):
+                 profesor_id = None, observ = None, estado = None, \
+                 opcion = "nuevo"):
         """Inicializa el diálogo de gestión de incidencias"""
         
         super(Dialog_Incidencia, self).__init__()
         self.ui = Ui_Dialog_Incidencia()
         self.ui.setupUi(self)
         
+        if opcion == "nuevo":
+            self.setWindowTitle("Crear incidencia")
+        if opcion == "modificar":
+            self.setWindowTitle("Modificar incidencia")
+                            
         self.ret = None
         
         # Carga de profesores.

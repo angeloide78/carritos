@@ -18,6 +18,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
 """
 
 import sys
+import json
+
 from PyQt5.QtWidgets import QApplication
 
 from carritos.controller.controller import VentanaPrincipal
@@ -30,5 +32,27 @@ def main():
     app.exec_()
 
 if __name__ == '__main__':
-    sys.exit(main())
-
+    
+    while True:
+        
+        main()
+        
+        # Se comprueba si se tiene que reiniciar.
+        
+        f = open("carritos.json", "r")
+        configuracion = json.load(f)
+        f.close()
+        
+        if configuracion["reiniciar_aplic"]:
+        
+            # Se desactiva el reinicio.
+        
+            configuracion["reiniciar_aplic"] = False
+            f = open("carritos.json", "w")
+            json.dump(configuracion, f)
+            f.close()
+            
+        else:
+            
+            break
+        

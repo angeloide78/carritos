@@ -17,45 +17,55 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from carritos.model.base import DMLModelo
+from carritos.model.model_base import DMLModelo
 from carritos.model.model import FICHERO_BD, FICHERO_LOG
-
-class Profesor(DMLModelo):
-    """Define a un profesor"""
+ 
+class Planta(DMLModelo):
+    """Define la planta de un edificio"""
     
     def __init__(self):
-        """Inicializa un profesor"""
+        """Inicializa una planta"""
         
         super().__init__(FICHERO_BD, FICHERO_LOG)
                    
-    def crea_profesor(self, nombre):
-        """Crea un profesor a partir de su nombre pasado como parámetro"""
+    def crea_planta(self, nombre):
+        """Crea una planta a partir del nombre de la planta pasado como
+        parámetro.
+        """
 
         self.conectar()
-        self.crea('profesor', [('nombre', str(nombre))])
+        self.crea('planta', [('observ', str(nombre))])
         self.desconectar()
 
-    def borra_profesor(self, id_):
-        """Borra un profesor a partir de su id"""
+    def borra_planta(self, id_):
+        """Borra una planta a partir de su id"""
         
         self.conectar()
-        # self.borra('profesor', [('nombre', str(nombre))])
-        self.borra('profesor', [('id', id_)])
+        self.borra('planta', [('id', id_)])
         self.desconectar()
         
-    def modifica_profesor(self, nombre_actual, nombre_nuevo):
-        """Modifica el nombre del profesor actual por otro nuevo"""
+    def modifica_planta(self, nombre_actual, nombre_nuevo):
+        """Modifica el nombre de la planta actual por otro nuevo"""
         
         self.conectar()
-        self.modifica('profesor', [('nombre', nombre_nuevo)],\
-                      [('nombre', nombre_actual)])
+        self.modifica('planta', [('observ', nombre_nuevo)],\
+                      [('observ', nombre_actual)])
         self.desconectar()
     
-    def recupera_profesores(self):
-        """Devuelve todos los profesores"""
+    def recupera_plantas(self, planta_id = None):
+        """Devuelve todas las plantas"""
         
         self.conectar()
-        ret = self.visualiza("Profesor", "select * from v_profesor")[2]
+        
+        if planta_id is None:
+            cadenaSQL = "select * from v_planta"
+            t = None
+        else:
+            cadenaSQL = "select * from v_planta where planta_id = ? "
+            t = (planta_id, )
+        
+        ret = self.visualiza("Planta", cadenaSQL, t)[2]
+        
         self.desconectar()
         
         return ret

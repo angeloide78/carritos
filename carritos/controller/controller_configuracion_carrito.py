@@ -19,7 +19,7 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
 
 from PyQt5 import QtWidgets
 
-from carritos.model.planta import Planta
+from carritos.model.model_planta import Planta
 from carritos.view.view_configuracion_carrito \
      import Ui_Dialog_Configuracion_Carrito
 

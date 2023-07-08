@@ -17,7 +17,7 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from carritos.model.base import DMLModelo
+from carritos.model.model_base import DMLModelo
 from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Carrito(DMLModelo):

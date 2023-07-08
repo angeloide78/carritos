@@ -17,7 +17,7 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from carritos.model.base import DMLModelo
+from carritos.model.model_base import DMLModelo
 from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Portatil(DMLModelo):
@@ -94,26 +94,26 @@ class Portatil(DMLModelo):
         return ret
         
     
-def main_test_0():
-    """Función para realización de tests"""
+#def main_test_0():
+    #"""Función para realización de tests"""
     
-    p = Portatil()
-    print(p.recupera_portatiles())
-    # p.borra_reserva(1, 1, 1, "2023_06_08")
-    # p.borra_reserva(2, 2, 2, "2023_06_08")
+    #p = Portatil()
+    #print(p.recupera_portatiles())
+    ## p.borra_reserva(1, 1, 1, "2023_06_08")
+    ## p.borra_reserva(2, 2, 2, "2023_06_08")
         
-    # p.crea_reserva(1, 1, 1)
-    # p.crea_reserva(2, 2, 2)
-    # p.modifica_reserva(2, "profesor", 1, 1, 1, "2023_06_08")
-    # print(p.recupera_reservas())
+    ## p.crea_reserva(1, 1, 1)
+    ## p.crea_reserva(2, 2, 2)
+    ## p.modifica_reserva(2, "profesor", 1, 1, 1, "2023_06_08")
+    ## print(p.recupera_reservas())
     
-    #p.crea_planta("dos")
-    #p.modifica_planta("una", "100")
-    # p.borra_planta("1")
-    # print(p.recupera_plantas())
+    ##p.crea_planta("dos")
+    ##p.modifica_planta("una", "100")
+    ## p.borra_planta("1")
+    ## print(p.recupera_plantas())
 
-# Test.    
-if __name__ == '__main__':
-    # pass
-    main_test_0()
-    # main_test_1()
+## Test.    
+#if __name__ == '__main__':
+    ## pass
+    #main_test_0()
+    ## main_test_1()

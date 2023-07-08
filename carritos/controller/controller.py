@@ -27,6 +27,7 @@ from os.path import exists as f_exists
 
 from PyQt5 import QtWidgets, QtGui
 
+from carritos.controller.controller_informes import CrearInforme
 from carritos.controller.controller_configuracion import Dialog_Configuracion
 from carritos.controller.controller_configuracion_carrito \
      import Dialog_Configuracion_Carrito
@@ -40,14 +41,15 @@ from carritos.view.view import ICONO_ACERCADE, ICONO_APLICACION, \
      LOGO_APLICACION, LOGO_IES 
 from carritos.view.view_carritos import Ui_Form
 
-from carritos.model.planta import Planta
-from carritos.model.carrito import Carrito
-from carritos.model.profesor import Profesor
-from carritos.model.reserva import Reserva
-from carritos.model.portatil import Portatil
-from carritos.model.incidencia import Incidencia
-from carritos.model.model import FICHERO_BD, CARRITOS_ESQUEMA
-from carritos.model.bd import Bd
+from carritos.model.model_planta import Planta
+from carritos.model.model_carrito import Carrito
+from carritos.model.model_profesor import Profesor
+from carritos.model.model_reserva import Reserva
+from carritos.model.model_portatil import Portatil
+from carritos.model.model_incidencia import Incidencia
+from carritos.model.model import RUTA_BD, FICHERO_BD, CARRITOS_ESQUEMA
+from carritos.model.model_bd import Bd
+from carritos.model.model_informe import Informe
 
 class VentanaPrincipal(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -101,8 +103,9 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         self.ui.pushButton_guardar_conf.clicked.connect(self.OnGuardarConf)
         self.ui.pushButton_logo.clicked.connect(self.OnCambiarLogo)
         self.ui.pushButton_exportar_bd.clicked.connect(self.OnExportar)
+        self.ui.pushButton_importar_bd.clicked.connect(self.OnImportar)
         
-        # Connects de combos.
+        # Connects de combos de reservas.
         self.ui.comboBox_planta.currentIndexChanged\
             .connect(self.OnCargarCarrito)
         
@@ -129,9 +132,110 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         # Connects de la tabla de incidencias.
         self.ui.tableWidget_incidencia.\
         doubleClicked.connect(lambda: self.OnGestionarIncidencia("modificar"))
-        
+        self.ui.radioButton_inci_abierta.\
+            clicked.connect(self.OnPoblarIncidencia)
+        self.ui.radioButton_inci_cerrada.\
+            clicked.connect(self.OnPoblarIncidencia)
+        self.ui.radioButton_inci_estado_todo.\
+            clicked.connect(self.OnPoblarIncidencia)
+        self.ui.radioButton_inci_actual.clicked.connect(self.OnPoblarIncidencia)
+        self.ui.radioButton_inci_tiempo_todo.clicked.\
+            connect(self.OnPoblarIncidencia)
+                
         # Connects de configuración.
         self.ui.pushButton_crear_conf.clicked.connect(self.OnConfiguracion)
+        
+        # Connects de informes.
+        self.ui.pushButton_imprimir.clicked.connect(self.OnImprimir)
+        
+    def OnPoblarIncidencia(self):
+        """Se pueblan las incidencias"""
+        
+        self.poblar_incidencia()
+        
+    def __curso_escolar(self):
+        """Devuelve la tupla del curso actual
+        (año_inicio, mes_inicio, año_fin, mes_fin)
+        """
+        
+        mes = {'Enero': '01',
+               'Febrero': '02',
+               'Marzo': '03',
+               'Abril': '04',
+               'Mayo': '05',
+               'Junio': '06',
+               'Julio': '07',
+               'Agosto': '08',
+               'Septiembre': '09',
+               'Octubre': '10',
+               'Noviembre': '11',
+               'Diciembre': '12'}
+        
+        annyo_inicio = self.ui.spinBox_inicio.text()
+        annyo_fin = self.ui.spinBox_fin.text()
+        mes_inicio = mes[self.ui.comboBox_inicio_curso.currentText()]
+        mes_fin = mes[self.ui.comboBox_fin_curso.currentText()]
+        
+        return annyo_inicio, mes_inicio, annyo_fin, mes_fin
+                
+    def __imprimir_incidencias(self, tipo):
+        """Imprime incidencias"""
+        
+        # Se recuperan las fechas de inicio y fin del curso escolar.
+        annyo_inicio, mes_inicio, annyo_fin, mes_fin = \
+            self.__curso_escolar()
+        
+        informe = Informe().incidencias(tipo, annyo_inicio, \
+                                        mes_inicio, annyo_fin, \
+                                        mes_fin)
+        
+        return informe
+    
+    def OnImprimir(self):
+        """Imprime el informe seleccionado"""
+        
+        # Se comprueba si hay que incluir el logo.
+        if self.ui.checkBox_informes.isChecked(): logo = LOGO_IES
+        else: logo = False             
+            
+        indice = self.ui.comboBox_informe.currentText()
+        
+        # Orientación del documento.
+        if self.ui.radioButton_imp_vertical.isChecked(): ori = "v"
+        if self.ui.radioButton_imp_horizontal.isChecked(): ori = "h"
+                    
+        # Informes disponibles.
+        
+        if indice == "Planificación de reservas":
+            
+            # Se recuperan las fechas de inicio y fin del curso escolar.
+            annyo_inicio, mes_inicio, annyo_fin, mes_fin = \
+                self.__curso_escolar()                   
+            
+            informe = Informe().reservas(annyo_inicio, mes_inicio, annyo_fin, \
+                                         mes_fin)
+            
+        if indice == "Incidencias abiertas":
+            
+            informe = self.__imprimir_incidencias("ABIERTA")
+            
+        if indice == "Incidencias cerradas":
+            
+            informe = self.__imprimir_incidencias("CERRADA")
+        
+        if indice == "Profesorado": informe = Informe().profesorado()
+                      
+        if indice == "Carritos": informe = Informe().carritos()                  
+    
+        if indice == "Portátiles": informe = Informe().portatiles()
+           
+        datos = informe[0]
+        nfich = informe[1]
+        msg = informe[2]
+                
+        pdf = CrearInforme(logo, datos)
+        pdf.imprimir_informe(nfich, msg, orientacion=ori)
+        
         
     def estado_bd(self):
         """Comprueba si la base de datos existe. En caso contrario genera
@@ -147,7 +251,7 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
                                   tipo = "executescript")
             if not ret[0]:
 
-                msg = 'No se encuentra el fichero de base de datos.'+\
+                msg = 'No se encuentra el fichero de base de datos. '+\
                     'Se ha intentado crear uno nuevo pero no es'+\
                     'posible. La aplicación no puede continuar!!!'
                 QtWidgets.QMessageBox.warning(self, 'Alerta', msg)
@@ -158,8 +262,8 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
 
             else:
 
-                msg = "No se encuentra el fichero de base de datos." +\
-                    "Se ha generado correctamente uno nuevo vacío"
+                msg = "No se encuentra el fichero de base de datos. " +\
+                    "Se ha generado correctamente un nuevo fichero vacío."
                 QtWidgets.QMessageBox.warning(self, 'Alerta', msg)
                 
             bd.desconectar()
@@ -185,7 +289,84 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             except:
                 QtWidgets.QMessageBox.warning(self, 'Alerta', \
                                  'La exportación ha fallado')                
+    
+    def reiniciar_aplicacion(self):
+        """Reinicia la aplicación"""
         
+        f = open("carritos.json", "r")
+        configuracion = json.load(f)
+        f.close()
+        
+        configuracion["reiniciar_aplic"] = True
+        
+        f = open("carritos.json", "w")
+        json.dump(configuracion, f)
+        f.close()        
+
+        QtWidgets.QApplication.quit()
+        
+    def OnImportar(self):
+        """Importa la base de datos. Si ya existe una en el destino, la renombra
+        con la fecha actual"""
+        
+        opciones = QtWidgets.QFileDialog.Options()
+        opciones |= QtWidgets.QFileDialog.ReadOnly
+    
+        # Mostrar el cuadro de diálogo de importación de archivo
+        nfich, _ = QtWidgets.\
+            QFileDialog.getOpenFileName(self, \
+                                        'Seleccionar archivo', '', \
+                                        'Archivos SQLite (*.db)', \
+                                        options=opciones)
+    
+        if nfich:
+ 
+            # Se realiza una copia de seguridad de la BBDD actual.
+            
+            fecha_actual = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            nuevo_nombre = f'carritos_backup_{fecha_actual}.db'
+            ruta_destino = f"{RUTA_BD}/{nuevo_nombre}"
+            
+            seguir = True
+                    
+            try:
+                
+                shutil.move(FICHERO_BD, ruta_destino)
+            
+            except:
+                
+                msg = 'No se ha podido realizar la copia de seguridad. '+\
+                    'Importación cancelada.'
+                QtWidgets.\
+                    QMessageBox.warning(self, 'Alerta', msg)
+        
+                seguir = False
+                
+            if seguir:
+                    
+                # Se copia la nueva BBDD.
+                
+                try:
+                    
+                    shutil.copy(nfich, FICHERO_BD)
+                    
+                    msg = "Importación realizada con éxito.\n\n"+\
+                        "La aplicación se va a reiniciar."
+                    
+                    QtWidgets.QMessageBox.information(self, 'Información', msg)
+                    
+                    self.reiniciar_aplicacion()
+                    
+                except:
+                    
+                    msg = 'No se ha podido importar el fichero. Hay una '+\
+                        f'copia de de seguridad en {ruta_destino}. ' + \
+                        'Renombra el fichero a carritos.db'
+                    
+                    QtWidgets.\
+                        QMessageBox.warning(self, 'Alerta',msg)
+                                
+            
     def OnCambiarLogo(self):
         """Selecciona un fichero PNG que será el logo del IES"""
         
@@ -212,7 +393,8 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             "anio_fin": anio_fin,
             "mes_fin": mes_fin,
             "logo_inicio": logo_inicio,
-            "logo_informes" : logo_informes
+            "logo_informes" : logo_informes, 
+            "reiniciar_aplic" : False
             }            
         
         f = open("carritos.json", "w")
@@ -415,7 +597,6 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             fila += 1
             
             for col in range(5):
-                
                 
                 item = "" if carrito[col] is None else str(carrito[col])
                 
@@ -694,7 +875,7 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         # Se lanza la gestión de incidencias.
         
         dialog = Dialog_Incidencia(fecha, horario, portatil_id, profesor_id, \
-                                   observ, estado)
+                                   observ, estado, opcion)
         dialog.exec_()
         
         if dialog.ret is not None:
@@ -759,7 +940,6 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
                                                 dialog.ret['profesor_id'], \
                                                 dialog.ret['horario_id'], \
                                                 dialog.ret['estado'])
-                                        
                 
                     # Se recargan las incidencias.
                     self.poblar_incidencia()
@@ -767,7 +947,16 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
     def poblar_incidencia(self):
         """Puebla la tabla de incidencias"""
         
-        incidencias = Incidencia().recupera_incidencias()
+        if self.ui.radioButton_inci_abierta.isChecked(): estado = "ABIERTA"
+        if self.ui.radioButton_inci_cerrada.isChecked(): estado = "CERRADA"
+        if self.ui.radioButton_inci_estado_todo.isChecked(): estado = "TODO"
+        
+        if self.ui.radioButton_inci_actual.isChecked():
+            rango_temporal = self.__curso_escolar()
+        else:
+            rango_temporal = None
+            
+        incidencias = Incidencia().recupera_incidencias(estado, rango_temporal)
         
         # Se hace no visible la numeración de las filas.
         self.ui.tableWidget_incidencia.verticalHeader().setVisible(False)
@@ -1047,4 +1236,4 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         tab_actual = self.ui.tabWidget_conf.currentIndex()
         boton_crear = False if tab_actual == 4 else True
         self.ui.pushButton_crear_conf.setVisible(boton_crear)
-                        
+    

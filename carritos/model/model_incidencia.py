@@ -17,7 +17,7 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from carritos.model.base import DMLModelo
+from carritos.model.model_base import DMLModelo
 from carritos.model.model import FICHERO_BD, FICHERO_LOG
     
 class Incidencia(DMLModelo):
@@ -81,40 +81,64 @@ class Incidencia(DMLModelo):
         self.modifica("incidencia", [(aux, nuevo)], [("id", incidencia_id)])
         self.desconectar()
     
-    def recupera_incidencias(self):
-        """Devuelve todas las incidencias"""
+    def recupera_incidencias(self, estado_incidencia, rango_temporal=None):
+        """Devuelve todas las incidencias.
+        
+        estado_incidencia: ABIERTA, CERRADA, TODO
+        
+        rango_temporal: None, (año inicial, mes inicial, año final, mes final)
+        """
+        
+        t = []
+        
+        if estado_incidencia == "TODO":
+            aux0 = "1 == 1"
+        else:
+            aux0 = "estado_incidencia = ?"
+            t.append(estado_incidencia)
+                    
+        if rango_temporal is None:
+            aux1 = "1 == 1"
+        else:
+            aux1 = "strftime('%Y-%m',replace(fecha_id,'_', '-')) between ? and ?"
+            t.append(f"{rango_temporal[0]}-{rango_temporal[1]}")
+            t.append(f"{rango_temporal[2]}-{rango_temporal[3]}")
+            
+        cadenaSQL = f"""
+        select * from v_incidencia where {aux0} and {aux1}
+        """
         
         self.conectar()
-        ret = self.visualiza("Incidencia", "select * from v_incidencia")[2]
+        ret = self.visualiza("Incidencia", cadenaSQL, tuple(t))[2]
         self.desconectar()
         
         return ret
 
-def main_test_0():
-    """Función para realización de tests"""
+#def main_test_0():
+    #"""Función para realización de tests"""
     
-    p = Incidencia()
-    p.crea_incidencia("Pantalla rota", "000002", "2023_06_10",\
-                      2, 2, "Disponible")
+    #p = Incidencia()
+    #p.crea_incidencia("Pantalla rota", "000002", "2023_06_10",\
+                      #2, 2, "Disponible")
         
-    print(p.recupera_incidencias())
+    #print(p.recupera_incidencias())
     
-    # print(p.recupera_portatiles())
-    # p.borra_reserva(1, 1, 1, "2023_06_08")
-    # p.borra_reserva(2, 2, 2, "2023_06_08")
+    ## print(p.recupera_portatiles())
+    ## p.borra_reserva(1, 1, 1, "2023_06_08")
+    ## p.borra_reserva(2, 2, 2, "2023_06_08")
         
-    # p.crea_reserva(1, 1, 1)
-    # p.crea_reserva(2, 2, 2)
-    # p.modifica_reserva(2, "profesor", 1, 1, 1, "2023_06_08")
-    # print(p.recupera_reservas())
+    ## p.crea_reserva(1, 1, 1)
+    ## p.crea_reserva(2, 2, 2)
+    ## p.modifica_reserva(2, "profesor", 1, 1, 1, "2023_06_08")
+    ## print(p.recupera_reservas())
     
-    #p.crea_planta("dos")
-    #p.modifica_planta("una", "100")
-    # p.borra_planta("1")
-    # print(p.recupera_plantas())
+    ##p.crea_planta("dos")
+    ##p.modifica_planta("una", "100")
+    ## p.borra_planta("1")
+    ## print(p.recupera_plantas())
 
-# Test.    
-if __name__ == '__main__':
-    pass
-    # main_test_0()
-    # main_test_1()
+## Test.    
+#if __name__ == '__main__':
+    #pass
+    ## main_test_0()
+    ## main_test_1()

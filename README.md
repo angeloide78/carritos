@@ -3,27 +3,47 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 # Roadmap del Proyecto
 
-## Por hacer
- 
-  - [ ] En Informes, implementar informes para consultas de:  
-
-     * Incidencias abiertas, por mes y año
-     * Incidencias cerradas, por mes y año
-     * Planificación de reservas de portátiles, por mes.
-     * Planificación de reservas de portátiles, por mes y por profesor/a.
-     * Todo el profesorado.
-     * Todos los portátiles.
+## Mejoras que podrian realizarse en futuras versiones
 
   - [ ] En Planificación y Reservas, si un día tiene las franjas de 1,2,3,4,5 y 6 reservadas (sin contar el recreo), el día en el calendario debe de pintarse de rojo.
-  - [ ] En Planificación y Reservas, al hacer click en un botón de franja horaria, su caja de texto de reserva debe de cambiar de color, para identificar la franja horaria que se está modificando.
 
-  - [ ] En Incidencias, implementar opción de visualizar todas las incidencias o solo las abiertas.
-  - [ ] En Incidencias, implementar opción de visualizar todas las incidencias o solo las incidencias de del curso escolar (de septiembre a junio).
-  - [ ] En Incidencias, al crear una incidencia se debe de identificar en el titulo de la ventana. Si es una modificación se debe de indicar en el título de la ventana.
+  - [ ] En Planificación y Reservas, al hacer click en un botón de franja horaria, su caja de texto de reserva debe de cambiar de color, para identificar la franja horaria que se está modificando.
  
+### [09-07-2023]
+
   - [ ] Manual de funcionamiento.
+
   - [ ] Configuración de instalación mediante setup.py
 
+### [08-07-2023]
+
+  - [X] Ajustes en el Modelo E-R final:
+
+![Modelo E-R final](carritos/assets/img_doc/modelo_er_final.png)
+
+  - [X] En Incidencias, implementar opción de visualizar todas las incidencias o solo las abiertas.
+
+  - [X] En Incidencias, implementar opción de visualizar todas las incidencias o solo las incidencias de del curso escolar (de septiembre a junio).
+
+  - [X] En Incidencias, al crear una incidencia se debe de identificar en el titulo de la ventana. Si es una modificación se debe de indicar en el título de la ventana.
+
+  - [X] En Informes, implementar informes para consultas de:  
+
+     * Incidencias abiertas, por curso escolar actual.
+     * Incidencias cerradas, por curso escolar actual.
+     * Planificación de reservas de portátiles, por curso escolar actual.
+     * Todo el profesorado.
+     * Todos los portátiles.
+     * Todos los carritos.
+
+![Informes de la aplicación](carritos/assets/img_doc/impresion.png)
+
+![Informe de reservas de carritos](carritos/assets/img_doc/impresion_reserva.png)
+
+### [07-07-2023]
+
+  - [X] Se finaliza la opción de importar.
+  
 ### [06-07-2023]
 
   - [X] Se replantea el sistema de configuración. 

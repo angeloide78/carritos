@@ -17,9 +17,10 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-FICHERO_BD = "carritos/model/carritos.db"
-FICHERO_LOG = "carritos/model/carritos.log"
-FICHERO_BD_DEMO = "carritos/model/carritos_demo.db"
+RUTA_BD = "carritos/model"
+FICHERO_BD = f"{RUTA_BD}/carritos.db"
+FICHERO_LOG = f"{RUTA_BD}/carritos.log"
+FICHERO_BD_DEMO = f"{RUTA_BD}/carritos_demo.db"
 CARRITOS_ESQUEMA = """
 BEGIN TRANSACTION; 
 
@@ -157,6 +158,50 @@ select portatil.id as "portatil_id",
        portatil.observ
   from portatil join carrito on carrito.id = portatil.carrito_id 
                 join planta on planta.id = carrito.planta_id;
+                
+CREATE VIEW v_informe_reserva as
+select substr(v_reserva.fecha,9,2)||'-'||substr(v_reserva.fecha,6,2)||'-'||substr(v_reserva.fecha,1,4) as fecha,
+       franja_horaria, 
+       carrito,
+       planta, 
+       profesor,
+       replace(v_reserva.fecha,'_', '-') as fecha_id
+ from v_reserva order by fecha, horario, carrito ;
+ 
+CREATE VIEW v_informe_profesor as
+select nombre_profesor
+  from v_profesor
+order by nombre_profesor ;
+
+CREATE VIEW v_informe_carrito as
+select planta_nombre,
+       carrito_nombre,
+       carrito_observ
+  from v_carrito
+order by planta_nombre, carrito_nombre ;
+  
+CREATE VIEW v_informe_portatil as 
+select carrito, 
+       marca,
+       numero_serie,
+       estado,
+       observ,
+       planta
+  from v_portatil
+ order by carrito, marca, numero_serie, estado, planta ;
+ 
+CREATE VIEW v_informe_incidencias as
+select v_incidencia.planta,
+       v_incidencia.carrito,
+       v_incidencia.portatil,
+       v_incidencia.fecha,
+       v_incidencia.franja_horaria,
+       profesor.nombre as profesor_responsable,
+       v_incidencia.incidencia,
+       v_incidencia.estado_incidencia,
+       replace(v_incidencia.fecha_id, '_', '-') as fecha_id
+  from v_incidencia join profesor on profesor.id = v_incidencia.profesor_id ;
+  
 COMMIT;
 """
 

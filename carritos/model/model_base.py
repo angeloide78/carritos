@@ -17,8 +17,8 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from carritos.model.log import Log
-from carritos.model.bd import Bd
+from carritos.model.model_log import Log
+from carritos.model.model_bd import Bd
 
 class Conexion(Log, Bd):
     """Implementa la conexión y desconexión con la base de datos, así como
@@ -189,183 +189,183 @@ class DMLModelo(Conexion):
       
         return ret 
 
-def main_test_0():
-    """Función para realización de tests"""
+#def main_test_0():
+    #"""Función para realización de tests"""
     
-    # Conexión con la base de datos.
-    a = Conexion('test_1.db', 'data_1.log')
-    a.conectar()
+    ## Conexión con la base de datos.
+    #a = Conexion('test_1.db', 'data_1.log')
+    #a.conectar()
         
-    # ############################################################
-    # Prueba de creación de base de datos e inserción de una fila.
-    # ############################################################
+    ## ############################################################
+    ## Prueba de creación de base de datos e inserción de una fila.
+    ## ############################################################
     
-    cadenaSQL = """
-    BEGIN TRANSACTION ;
-    CREATE TABLE IF NOT EXISTS "prueba" (
-	"id"	INTEGER NOT NULL,
-	"dato"	TEXT,
-	PRIMARY KEY("id")
-    ) ;
-    INSERT INTO "prueba" VALUES (0,'Valor 0') ;
-    COMMIT ;
-    """
+    #cadenaSQL = """
+    #BEGIN TRANSACTION ;
+    #CREATE TABLE IF NOT EXISTS "prueba" (
+	#"id"	INTEGER NOT NULL,
+	#"dato"	TEXT,
+	#PRIMARY KEY("id")
+    #) ;
+    #INSERT INTO "prueba" VALUES (0,'Valor 0') ;
+    #COMMIT ;
+    #"""
     
-    a.ejecutar_sql(cadenaSQL, tipo='executescript')
+    #a.ejecutar_sql(cadenaSQL, tipo='executescript')
     
-    # ######################################
-    # Prueba de inserción de una única fila.
-    # ######################################
+    ## ######################################
+    ## Prueba de inserción de una única fila.
+    ## ######################################
     
-    cadenaSQL = "insert into prueba values (?,?)"
+    #cadenaSQL = "insert into prueba values (?,?)"
     
-    a.ejecutar_sql(cadenaSQL, parametros =(1,"Valor 1"))
+    #a.ejecutar_sql(cadenaSQL, parametros =(1,"Valor 1"))
     
-    # ################################################
-    # Prueba de consulta que recupera múltiples filas.
-    # ################################################
+    ## ################################################
+    ## Prueba de consulta que recupera múltiples filas.
+    ## ################################################
     
-    cadenaSQL = "select * from prueba"
+    #cadenaSQL = "select * from prueba"
     
-    ret = a.ejecutar_sql(cadenaSQL, tipo='fetchall')
+    #ret = a.ejecutar_sql(cadenaSQL, tipo='fetchall')
     
-    if ret[0]:
-        a.mensaje('SQL: {}'.format(cadenaSQL))
-        print(ret)
+    #if ret[0]:
+        #a.mensaje('SQL: {}'.format(cadenaSQL))
+        #print(ret)
         
-    else:
-        a.mensaje('SQL:{}'.format(cadenaSQL), "error")
+    #else:
+        #a.mensaje('SQL:{}'.format(cadenaSQL), "error")
 
-    # ###############################################
-    # Prueba de consulta que recupera una única fila.
-    # ###############################################
+    ## ###############################################
+    ## Prueba de consulta que recupera una única fila.
+    ## ###############################################
     
-    cadenaSQL = "select * from prueba where id = ?"
+    #cadenaSQL = "select * from prueba where id = ?"
     
-    ret = a.ejecutar_sql(cadenaSQL, parametros=(0, ), tipo="fetchone")
+    #ret = a.ejecutar_sql(cadenaSQL, parametros=(0, ), tipo="fetchone")
         
-    if ret[0]:
-        a.mensaje('SQL: {}'.format(cadenaSQL))
-        print(ret)
+    #if ret[0]:
+        #a.mensaje('SQL: {}'.format(cadenaSQL))
+        #print(ret)
         
-    else:
-        a.mensaje('SQL:{}'.format(cadenaSQL), "error")
+    #else:
+        #a.mensaje('SQL:{}'.format(cadenaSQL), "error")
     
-    # #######################################
-    # Prueba de inserción de múltiples filas.
-    # #######################################
+    ## #######################################
+    ## Prueba de inserción de múltiples filas.
+    ## #######################################
    
-    # Se hace necesario desconectar, ya que vamos a calcular el id máximo,
-    # y puesto que se han hecho inserts antes, y SQLite no trabaja muy bien 
-    # el autocommit, es mejor desconectar y volver a conectar.
+    ## Se hace necesario desconectar, ya que vamos a calcular el id máximo,
+    ## y puesto que se han hecho inserts antes, y SQLite no trabaja muy bien 
+    ## el autocommit, es mejor desconectar y volver a conectar.
     
-    a.desconectar()
+    #a.desconectar()
     
-    # Conexión con la base de datos.
+    ## Conexión con la base de datos.
     
-    a = Conexion('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = Conexion('test_1.db', 'data_1.log')
+    #a.conectar()
         
-    cadenaSQL = "select max(id) from prueba"
-    ret = a.ejecutar_sql(cadenaSQL, tipo="fetchone")
-    _id = ret[2][0]    
+    #cadenaSQL = "select max(id) from prueba"
+    #ret = a.ejecutar_sql(cadenaSQL, tipo="fetchone")
+    #_id = ret[2][0]    
         
-    cadenaSQL = "insert into prueba values (?,?)"
+    #cadenaSQL = "insert into prueba values (?,?)"
     
-    l = []
-    for i in range(3):
-        _id += 1
-        l.append((_id, "Valor {}".format(_id)))
+    #l = []
+    #for i in range(3):
+        #_id += 1
+        #l.append((_id, "Valor {}".format(_id)))
     
-    ret = a.ejecutar_sql(cadenaSQL, parametros = l, tipo="executemany")
-    if ret[0]:
-        print("Se insertaron los datos {}".format(l))
-        print(ret)
-    else:
-        a.mensaje('SQL: {}, Datos: {}'.format(cadenaSQL, l), "warning")
+    #ret = a.ejecutar_sql(cadenaSQL, parametros = l, tipo="executemany")
+    #if ret[0]:
+        #print("Se insertaron los datos {}".format(l))
+        #print(ret)
+    #else:
+        #a.mensaje('SQL: {}, Datos: {}'.format(cadenaSQL, l), "warning")
         
-    # ################################
-    # Desconexión de la base de datos.
-    # ################################
+    ## ################################
+    ## Desconexión de la base de datos.
+    ## ################################
     
-    a.desconectar()
+    #a.desconectar()
     
-def main_test_1():
-    """Función para realización de tests"""
+#def main_test_1():
+    #"""Función para realización de tests"""
     
-    # #########
-    # INSERCIÓN
-    # #########
+    ## #########
+    ## INSERCIÓN
+    ## #########
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.crea('prueba', [('id', 8), ('dato', 'Valor 8')])
+    #a.crea('prueba', [('id', 8), ('dato', 'Valor 8')])
         
-    a.desconectar()
+    #a.desconectar()
     
-    # ############
-    # MODIFICACIÓN
-    # ############
+    ## ############
+    ## MODIFICACIÓN
+    ## ############
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.modifica('prueba', [('dato', 'Dato 8 modificado')], [("id", 8)])
+    #a.modifica('prueba', [('dato', 'Dato 8 modificado')], [("id", 8)])
     
-    a.desconectar()
+    #a.desconectar()
     
-    # #######
-    # BORRADO
-    # #######
+    ## #######
+    ## BORRADO
+    ## #######
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.borra('prueba', [('id', 8)])
+    #a.borra('prueba', [('id', 8)])
     
-    a.desconectar()
+    #a.desconectar()
     
-def main_test_2():
-    """Función para realización de tests"""
+#def main_test_2():
+    #"""Función para realización de tests"""
     
-    # #########
-    # INSERCIÓN
-    # #########
+    ## #########
+    ## INSERCIÓN
+    ## #########
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.crea('prueba', [('id', 10), ('dato', 'Valor 10')])
+    #a.crea('prueba', [('id', 10), ('dato', 'Valor 10')])
         
-    a.desconectar()
+    #a.desconectar()
     
-    # ############
-    # MODIFICACIÓN
-    # ############
+    ## ############
+    ## MODIFICACIÓN
+    ## ############
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.modifica('prueba', [('id', 11), ('dato', 'Dato 10 modificado')], \
-               [("id", 10), ('dato', 'Valor 10')])
+    #a.modifica('prueba', [('id', 11), ('dato', 'Dato 10 modificado')], \
+               #[("id", 10), ('dato', 'Valor 10')])
     
-    a.desconectar()
+    #a.desconectar()
     
-    # #######
-    # BORRADO
-    # #######
+    ## #######
+    ## BORRADO
+    ## #######
     
-    a = DMLModelo('test_1.db', 'data_1.log')
-    a.conectar()
+    #a = DMLModelo('test_1.db', 'data_1.log')
+    #a.conectar()
     
-    a.borra('prueba', [('id', 11)])
+    #a.borra('prueba', [('id', 11)])
         
-    a.desconectar()
+    #a.desconectar()
     
-# Test.    
-if __name__ == '__main__':
-    pass
-    # main_test_0()
-    # main_test_1()
-    # main_test_2()
+## Test.    
+#if __name__ == '__main__':
+    #pass
+    ## main_test_0()
+    ## main_test_1()
+    ## main_test_2()
