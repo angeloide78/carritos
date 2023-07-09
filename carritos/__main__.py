@@ -23,6 +23,7 @@ import json
 from PyQt5.QtWidgets import QApplication
 
 from carritos.controller.controller import VentanaPrincipal
+from carritos.model.model import FICHERO_CONF_APL
 
 def apl_qt():
     app = QApplication(sys.argv)
@@ -39,7 +40,7 @@ def main():
         
         # Se comprueba si se tiene que reiniciar.
 
-        f = open("carritos.json", "r")
+        f = open(FICHERO_CONF_APL, "r")
         configuracion = json.load(f)
         f.close()
 
@@ -48,7 +49,7 @@ def main():
             # Se desactiva el reinicio.
 
             configuracion["reiniciar_aplic"] = False
-            f = open("carritos.json", "w")
+            f = open(FICHERO_CONF_APL, "w")
             json.dump(configuracion, f)
             f.close()
 

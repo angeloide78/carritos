@@ -24,7 +24,6 @@ import sys
 from os import remove as f_borrar_fichero
 from os.path import exists as f_exists
 
-
 from PyQt5 import QtWidgets, QtGui
 
 from carritos.controller.controller_informes import CrearInforme
@@ -47,7 +46,8 @@ from carritos.model.model_profesor import Profesor
 from carritos.model.model_reserva import Reserva
 from carritos.model.model_portatil import Portatil
 from carritos.model.model_incidencia import Incidencia
-from carritos.model.model import RUTA_BD, FICHERO_BD, CARRITOS_ESQUEMA
+from carritos.model.model import RUTA_BD, FICHERO_BD, CARRITOS_ESQUEMA, \
+     FICHERO_CONF_APL
 from carritos.model.model_bd import Bd
 from carritos.model.model_informe import Informe
 
@@ -66,6 +66,10 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
         
         # Estado de la base de datos.
         if not self.estado_bd(): sys.exit()
+        
+        # Se oculta el botón de "CREAR" en configuración, ya que por defecto
+        # se presenta la pantalla de configuración del aplicativo.
+        self.ui.pushButton_crear_conf.setVisible(False)
         
         # Se aplica la configuración general de la aplicación.       
         self.conf_apl()
@@ -293,17 +297,26 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
     def reiniciar_aplicacion(self):
         """Reinicia la aplicación"""
         
-        f = open("carritos.json", "r")
-        configuracion = json.load(f)
-        f.close()
+        try:
+            
+            f = open(FICHERO_CONF_APL, "r")
+            configuracion = json.load(f)
+            f.close()
         
-        configuracion["reiniciar_aplic"] = True
+            configuracion["reiniciar_aplic"] = True
         
-        f = open("carritos.json", "w")
-        json.dump(configuracion, f)
-        f.close()        
+            f = open(FICHERO_CONF_APL, "w")
+            json.dump(configuracion, f)
+            f.close()        
 
-        QtWidgets.QApplication.quit()
+            QtWidgets.QApplication.quit()
+            
+        except:
+            
+            msg = "No he podido reiniciar la aplicación. Deberá cerrar y "+\
+                "volver a abrir la aplicación para que los cambios tengan " + \
+                "efecto."
+            QtWidgets.QMessageBox.warning(self, 'Alerta', msg)              
         
     def OnImportar(self):
         """Importa la base de datos. Si ya existe una en el destino, la renombra
@@ -377,10 +390,16 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
                             'Archivos PNG (*.png)', options=opciones)
         
         if nfich:
-            shutil.copy(nfich, LOGO_IES)
-            self.ui.label_logo.setPixmap(QtGui.QPixmap(LOGO_IES))
-            self.aplicar_cambios_conf()
-
+            try:
+                shutil.copy(nfich, LOGO_IES)
+                self.ui.label_logo.setPixmap(QtGui.QPixmap(LOGO_IES))
+                self.aplicar_cambios_conf()
+                
+            except:
+                msg = "No se ha podido cambiar el logo!"
+                QtWidgets.\
+                    QMessageBox.warning(self, 'Alerta',msg)
+                
     def __guardar_conf_json(self, nombre_ies, logo_ies, anio_inicio, anio_fin, \
                             mes_inicio, mes_fin, logo_inicio, logo_informes):
         """Guarda en JSON la configuración del aplicativo"""
@@ -397,7 +416,7 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
             "reiniciar_aplic" : False
             }            
         
-        f = open("carritos.json", "w")
+        f = open(FICHERO_CONF_APL, "w")
         json.dump(configuracion, f)
         f.close()
         
@@ -422,8 +441,8 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
     def conf_apl(self):
         """Recupera del fichero de configuración los datos básicos de la
         aplicación"""
-        
-        if not f_exists("carritos.json"):
+                
+        if not f_exists(FICHERO_CONF_APL):
             
             anio_actual = datetime.datetime.now().year
             mes_actual = datetime.datetime.now().month
@@ -447,7 +466,7 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
                                      logo_inicio, logo_informes)
             
         else:
-            f = open("carritos.json", "r")
+            f = open(FICHERO_CONF_APL, "r")
             configuracion = json.load(f)
         
             nombre_ies = configuracion["nombre_ies"]

@@ -16,11 +16,15 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 
-RUTA_BD = "carritos/model"
-FICHERO_BD = f"{RUTA_BD}/carritos.db"
-FICHERO_LOG = f"{RUTA_BD}/carritos.log"
-FICHERO_BD_DEMO = f"{RUTA_BD}/carritos_demo.db"
+dir_actual = os.path.dirname(os.path.abspath(__file__))
+RUTA_BD = os.path.join(*[dir_actual])
+
+FICHERO_BD = os.path.join(*[RUTA_BD, "carritos.db"])
+FICHERO_LOG = os.path.join(*[RUTA_BD, "carritos.log"])
+FICHERO_CONF_APL = os.path.join(*[RUTA_BD, "carritos.json"])
+
 CARRITOS_ESQUEMA = """
 BEGIN TRANSACTION; 
 

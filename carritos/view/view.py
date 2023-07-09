@@ -17,10 +17,15 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-ICONO_ACERCADE = "carritos/assets/imagenes/carritos_icono_192.png"
-LOGO_APLICACION = "carritos/assets/imagenes/carritos_icono_192.png"
-ICONO_APLICACION = "carritos/assets/imagenes/carritos_icono_32.png"
-LOGO_IES = "carritos/assets/imagenes/logo_ies.png"
+import os
 
+ejecucion_dir = os.path.dirname(os.path.abspath(__file__))
+dir_actual = os.path.abspath(os.path.join(ejecucion_dir, '..'))
 
-    
+ICONO_ACERCADE = os.path.join(*[dir_actual, "assets", "imagenes", \
+                                "carritos_icono_192.png"])
+LOGO_APLICACION = os.path.join(*[dir_actual,"assets", "imagenes", \
+                                 "carritos_icono_192.png"])
+ICONO_APLICACION = os.path.join(*[dir_actual, "assets", "imagenes", \
+                                  "carritos_icono_32.png"])
+LOGO_IES = os.path.join(*[dir_actual,"assets", "imagenes", "logo_ies.png"])

@@ -63,6 +63,7 @@ Agradecemos todas las contribuciones y comentarios constructivos.
 ## Licencia
 
 Este proyecto está licenciado bajo la licencia [GNU GPL 3]( https://www.gnu.org/licenses/gpl-3.0.html)
+
 # Roadmap del Proyecto
 
 ## Mejoras que podrían realizarse en futuras versiones
@@ -71,11 +72,14 @@ Este proyecto está licenciado bajo la licencia [GNU GPL 3]( https://www.gnu.org
 
   - [ ] En Planificación y Reservas, al hacer click en un botón de franja horaria, su caja de texto de reserva debe de cambiar de color, para identificar la franja horaria que se está modificando.
  
-### [09-07-2023]
+### [10-07-2023]
 
   - [ ] Manual de funcionamiento.
+  - [ ] Pruebas de usuario (que las hago yo mismo... en fin... que puede salir mal...)
 
-  - [ ] Configuración de instalación mediante setup.py
+### [09-07-2023]
+  
+  - [X] Configuración de instalación mediante setup.py en Windows y Linux.
 
 ### [08-07-2023]
 

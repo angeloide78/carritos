@@ -19,14 +19,14 @@ carritos, un sistema de gestión de portátiles para los IES de Andalucía
 
 import subprocess
 import sys
-from os.path import realpath
+import os.path
 
 from reportlab.lib.pagesizes import A4, landscape, portrait
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table,\
      TableStyle, Image, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+# from reportlab.lib.enums import TA_CENTER, TA_LEFT
     
 class InformeReportLab:
     """Informe de la aplicación"""
@@ -129,26 +129,36 @@ class CrearInforme:
         self.__ruta_logo = ruta_logo
         self.__datos = datos
                 
+    def __ruta_pdf(self, nombre_pdf):
+        """Devuelve la ruta del fichero pdf"""
+        
+        ejecucion_dir = os.path.dirname(os.path.abspath(__file__))
+        dir_actual = os.path.abspath(os.path.join(ejecucion_dir, '..'))       
+        
+        return os.path.join(*[dir_actual, "static", "pdf", nombre_pdf])                
+                
     def imprimir_informe(self, nombre_pdf = "informe_carritos.pdf", \
                          cabecera= "Informe", \
                          visualizar_pdf=True, \
                          orientacion="v"):
         """Imprime un informe"""
         
-       # Se genera el PDF    
-        informe = InformeReportLab(self.__ruta_logo, nombre_pdf)
+        # Se genera el PDF    
+        informe = InformeReportLab(self.__ruta_logo, \
+                                   self.__ruta_pdf(nombre_pdf))
         informe.crear_informe(self.__datos, cabecera, orientacion)
         
         # Se visualiza por pantalla el PDF.
-        if visualizar_pdf: self.visualizar_informe(nombre_pdf)
+        if visualizar_pdf: self.visualizar_informe(self.__ruta_pdf(nombre_pdf))
         
     def visualizar_informe(self, nombre_pdf):
         """Visualiza el PDF con la aplicación por defecto del sistema."""
         
         if sys.platform.startswith('linux'):
-            subprocess.run(['xdg-open', realpath(nombre_pdf)])
+            subprocess.run(['xdg-open', self.__ruta_pdf(nombre_pdf)])
         elif sys.platform.startswith('win'):
-            subprocess.run(['start', '', realpath(nombre_pdf)], shell=True)
+            subprocess.run(['start', '', self.__ruta_pdf(nombre_pdf)], \
+                           shell=True)
             
 #if __name__ == '__main__':
 

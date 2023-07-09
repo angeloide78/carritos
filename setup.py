@@ -16,16 +16,13 @@ setup(
     include_package_data=True,  
     install_requires=[
         'reportlab',
-        'pyqt5'
+        'pyqt5' 
         ],
     package_data={
-           'carritos': ['model/*.db',
-                        'model/*.log',
-                        'model/*.pdf',
-                        '*.json', 
+           'carritos': ['model/carritos.db',
                         'assets/imagenes/*.png',
                         'assets/img_doc/*.png',
-                        'view/*.ui'] 
+                        'view/*.ui']
        },    
     entry_points={
         'console_scripts': [
@@ -34,9 +31,9 @@ setup(
     },
     classifiers=[
         'Programming Language :: Python :: 3.9',
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-    'Operating System :: Microsoft :: Windows',
-    'Operating System :: POSIX :: Linux',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux',
     ],
 )
 
