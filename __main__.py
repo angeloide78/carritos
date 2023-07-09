@@ -24,35 +24,37 @@ from PyQt5.QtWidgets import QApplication
 
 from carritos.controller.controller import VentanaPrincipal
 
-def main(): 
+def apl_qt():
     app = QApplication(sys.argv)
     app.setStyle('Fusion') 
     form = VentanaPrincipal()
     form.show()
     app.exec_()
 
-if __name__ == '__main__':
-    
+def main():
+
     while True:
-        
-        main()
+
+        apl_qt()
         
         # Se comprueba si se tiene que reiniciar.
-        
+
         f = open("carritos.json", "r")
         configuracion = json.load(f)
         f.close()
-        
+
         if configuracion["reiniciar_aplic"]:
-        
+
             # Se desactiva el reinicio.
-        
+
             configuracion["reiniciar_aplic"] = False
             f = open("carritos.json", "w")
             json.dump(configuracion, f)
             f.close()
-            
+
         else:
-            
+
             break
-        
+
+if __name__ == '__main__':
+    main() 

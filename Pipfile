@@ -4,11 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pyqt-tools = "*"
 pyqt5 = "*"
 reportlab = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"

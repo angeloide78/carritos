@@ -6,7 +6,9 @@
 <p align="right">
   <img src="carritos/assets/imagenes/carritos_icono_96.png" alt="Logo de la aplicación">
 </p>
+
 # carritos
+
 Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 ## Descripción

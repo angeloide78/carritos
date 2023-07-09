@@ -1,1 +1,1 @@
-{"nombre_ies": "IES Jos\u00e9 Mar\u00edn", "logo_ies": "carritos/assets/imagenes/logo_ies.png", "anio_inicio": 2022, "mes_inicio": "Septiembre", "anio_fin": 2023, "mes_fin": "Junio", "logo_inicio": false, "logo_informes": true, "reiniciar_aplic": false}
+{"nombre_ies": "IES", "logo_ies": "src/assets/imagenes/logo_ies.png", "anio_inicio": 2023, "mes_inicio": "Septiembre", "anio_fin": 2024, "mes_fin": "Junio", "logo_inicio": false, "logo_informes": true, "reiniciar_aplic": false}

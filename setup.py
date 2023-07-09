@@ -13,18 +13,27 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/angeloide78/carritos',
     packages=find_packages(),
-    include_package_data=True,
+    include_package_data=True,  
     install_requires=[
         'reportlab',
-        'pyqt5',
-    ],
+        'pyqt5'
+        ],
+    package_data={
+           'carritos': ['model/*.db',
+                        'model/*.log',
+                        'model/*.pdf',
+                        '*.json', 
+                        'assets/imagenes/*.png',
+                        'assets/img_doc/*.png',
+                        'view/*.ui'] 
+       },    
     entry_points={
-    'console_scripts': [
-        'carritos = main:main',
-    ],
+        'console_scripts': [
+        'carritos = carritos.__main__:main',
+        ],
     },
     classifiers=[
-    'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.9',
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX :: Linux',

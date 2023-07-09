@@ -1,4 +1,5 @@
 # ALGG 12-06-2023 - Ficheros de proyectos de WingIDE
+*.sh
 *.wpr
 *.wpu
 # ALGG 07-06-2023
