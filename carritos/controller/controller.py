@@ -266,9 +266,9 @@ class VentanaPrincipal(QtWidgets.QMainWindow):
 
             else:
 
-                msg = "No se encuentra el fichero de base de datos. " +\
-                    "Se ha generado correctamente un nuevo fichero vacío."
-                QtWidgets.QMessageBox.warning(self, 'Alerta', msg)
+                msg = "Bienvenido a carritos, un sistema de planificación " +\
+                    "y reservas de carritos de portátiles para IES"
+                QtWidgets.QMessageBox.information(self, 'carritos', msg)
                 
             bd.desconectar()
             

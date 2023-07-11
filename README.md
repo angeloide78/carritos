@@ -15,10 +15,15 @@ Gestión de carritos de portátiles para IES de la Junta de Andalucía
 
 Carritos es una aplicación para la gestión de carritos de portátiles en institutos de educación secundaria (IES) de la Junta de Andalucía. Permite llevar un registro de reservas, incidencias y generar informes relacionados con el uso de los portátiles.
 
-
 ## Instalación
 
-Para instalar carritos, sigue estos pasos:
+<strong>carritos</strong> es multiplataforma, desarrollada y probada en sistemas Linux Ubuntu y en Windows 10. Para Windows 11 hay un problema gráfico de escalado del propio SSOO, y los componentes gráficos cambian de tamaño y posición.
+
+Es necesario tener instalado <strong>pip</strong>. Descarga de la carpeta  carritos-1.0.0.tar.gz y ejecutas en el Terminal o Consola de Comandos:
+
+        pip install carritos-1.0.0.tar.gz
+
+Para instalar carritos en modo de desarrollo, sigue estos pasos:
 
 1. Clona el repositorio desde GitHub:
 
@@ -32,9 +37,12 @@ Para instalar carritos, sigue estos pasos:
 
         pipenv install
 
+####    NOTA: Si te da error de la versión de Python, edita el PipFile, y cambia la versión. Esta aplicación está desarrollada en Python 3.8. Cualquier versión superior debe ser válida.
+
 4. Ejecuta la aplicación:
 
-        pipenv run python main.py
+        pipenv run python __main__.py
+
 
 ## Uso
 

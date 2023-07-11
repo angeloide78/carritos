@@ -1,3 +1,6 @@
+# ALGG 11-07-2023 - No incluyo la BBDD que es de pruebas, ni tampoco los ficheros de configuración JSON.
+*.db
+*.json
 # ALGG 12-06-2023 - Ficheros de proyectos de WingIDE
 *.sh
 *.wpr
